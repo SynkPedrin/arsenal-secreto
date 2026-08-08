@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // O projeto já tem README; não gerar AGENTS.md/CLAUDE.md a cada dev.
+  agentRules: false,
 };
 
 export default nextConfig;

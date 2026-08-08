@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# env: exemplo versionado, segredos nunca
+!.env.example
+
+# previews gerados no build
+/public/previews/*.png
