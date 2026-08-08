@@ -26,15 +26,21 @@ type Params = {
 };
 
 const BY_STATE: Record<AssistantState, Params> = {
-  idle: { spin: 0.16, radius: 1, spiral: 0, turbulence: 0.05, glow: 0.42, burn: 0 },
-  listening: { spin: 0.2, radius: 1.02, spiral: 0, turbulence: 0.06, glow: 0.6, burn: 0 },
-  retrieving: { spin: 0.34, radius: 0.92, spiral: 1, turbulence: 0.08, glow: 0.72, burn: 0 },
-  thinking: { spin: 0.24, radius: 1.01, spiral: 0, turbulence: 1, glow: 0.86, burn: 0 },
-  answering: { spin: 0.22, radius: 1.05, spiral: 0, turbulence: 0.18, glow: 0.78, burn: 0 },
-  error: { spin: 0.1, radius: 0.96, spiral: 0, turbulence: 0.5, glow: 0.5, burn: 1 },
+  idle: { spin: 0.16, radius: 1, spiral: 0, turbulence: 0.05, glow: 0.58, burn: 0 },
+  listening: { spin: 0.2, radius: 1.02, spiral: 0, turbulence: 0.06, glow: 0.76, burn: 0 },
+  retrieving: { spin: 0.34, radius: 0.92, spiral: 1, turbulence: 0.08, glow: 0.86, burn: 0 },
+  thinking: { spin: 0.24, radius: 1.01, spiral: 0, turbulence: 1, glow: 1, burn: 0 },
+  answering: { spin: 0.22, radius: 1.05, spiral: 0, turbulence: 0.18, glow: 0.92, burn: 0 },
+  error: { spin: 0.1, radius: 0.96, spiral: 0, turbulence: 0.5, glow: 0.62, burn: 1 },
 };
 
-type Particle = { x: number; y: number; z: number; seed: number };
+type Particle = { x: number; y: number; z: number; seed: number; scale: number };
+
+/** Ruído determinístico em [0,1) — mesma esfera a cada montagem. */
+function hash(i: number): number {
+  const s = Math.sin(i * 127.1) * 43758.5453;
+  return s - Math.floor(s);
+}
 
 function fibonacciSphere(count: number): Particle[] {
   const points: Particle[] = new Array(count);
@@ -48,6 +54,9 @@ function fibonacciSphere(count: number): Particle[] {
       z: Math.sin(theta) * ring,
       // Fase própria: sem isso a turbulência ficaria sincronizada e artificial.
       seed: (i * 0.6180339887) % 1,
+      // Tamanhos desiguais quebram o padrão regular da fibonacci, que de
+      // outro modo aparece como textura de bola de golfe.
+      scale: 0.55 + hash(i) * 1.15,
     };
   }
   return points;
@@ -192,16 +201,25 @@ export function ParticleSphere({
 
       ctx.clearRect(0, 0, width, height);
 
-      // Núcleo.
-      const coreR = baseRadius * (0.34 + audio * 0.1);
-      const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR);
       const hot = current.burn > 0.5 ? BRAND_RGB.amber : BRAND_RGB.gold;
-      core.addColorStop(0, `rgba(${hot}, ${(0.3 * glow).toFixed(3)})`);
+
+      // Núcleo: brilho interno atrás das partículas.
+      const coreR = baseRadius * (0.62 + audio * 0.12);
+      const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR);
+      core.addColorStop(0, `rgba(${hot}, ${(0.22 * glow).toFixed(3)})`);
+      core.addColorStop(0.45, `rgba(${hot}, ${(0.06 * glow).toFixed(3)})`);
       core.addColorStop(1, `rgba(${hot}, 0)`);
       ctx.fillStyle = core;
       ctx.beginPath();
       ctx.arc(cx, cy, coreR, 0, Math.PI * 2);
       ctx.fill();
+
+      // Linha de horizonte: marca a silhueta e ancora o volume.
+      ctx.beginPath();
+      ctx.arc(cx, cy, baseRadius * radiusScale, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(${hot}, ${(0.1 * glow).toFixed(3)})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
 
       for (let i = 0; i < count; i += 1) {
         const p = particles[i];
@@ -237,9 +255,13 @@ export function ParticleSphere({
         const sx = cx + x1 * rr * depth;
         const sy = cy + y2 * rr * depth;
 
-        // Partículas do fundo somem; as da frente brilham.
-        let alpha = (0.1 + depth * 0.55) * glow;
-        let dot = depth * (degraded ? 1.35 : 1.15);
+        // 1 na face voltada para a câmera, 0 na de trás. A curva exponencial
+        // é o que cria volume: sem ela a esfera lê como disco pontilhado.
+        const front = (1 - z2) * 0.5;
+        const facing = front * front * front;
+
+        let alpha = (0.05 + facing * 0.95) * glow;
+        let dot = (0.45 + facing * 1.5) * (degraded ? 1.3 : 1) * p.scale;
 
         // Onda radial: acende quem está na crista.
         if (rings.length > 0) {

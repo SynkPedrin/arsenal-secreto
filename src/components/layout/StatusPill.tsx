@@ -12,12 +12,14 @@ export function StatusPill({ status = "online" }: { status?: SystemStatus }) {
   return (
     <div
       role="status"
-      className="pointer-events-none flex items-center gap-2 rounded-full border border-hairline bg-panel/70 px-3 py-1.5 backdrop-blur-md"
+      className="pointer-events-none flex items-center gap-2.5 rounded-full border border-hairline bg-[oklch(14%_0.005_60_/_0.72)] py-1.5 pr-3.5 pl-3 shadow-[inset_0_1px_0_0_oklch(100%_0_0_/_0.05)] backdrop-blur-md"
     >
-      <span
-        aria-hidden
-        className={`size-1.5 rounded-full ${dot} ${status === "offline" ? "" : "animate-pulse-dot"}`}
-      />
+      <span className="relative flex size-1.5 items-center justify-center">
+        <span className={`absolute size-1.5 rounded-full ${dot}`} />
+        {status !== "offline" ? (
+          <span className={`absolute size-1.5 animate-ping rounded-full ${dot} opacity-60`} />
+        ) : null}
+      </span>
       <span className={`text-meta ${text}`}>{label}</span>
     </div>
   );

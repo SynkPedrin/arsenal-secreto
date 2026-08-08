@@ -43,13 +43,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${archivo.variable} ${archivoDisplay.variable} ${plexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">
+        <div className="ambient" aria-hidden />
+
         <Sidebar initials="PE" />
 
         <div className="fixed top-5 right-5 z-30">
           <StatusPill status="online" />
         </div>
 
-        <main className="relative z-10 min-h-dvh pb-16 md:pb-0 md:pl-[68px]">{children}</main>
+        <main className="relative z-10 min-h-dvh pb-16 md:pb-0 md:pl-[var(--rail-w)]">
+          {children}
+        </main>
       </body>
     </html>
   );

@@ -19,20 +19,31 @@ export function Sidebar({ initials }: { initials: string }) {
   return (
     <nav
       aria-label="Navegação principal"
-      className="fixed inset-x-0 bottom-0 z-30 flex h-16 items-center justify-around border-t border-hairline bg-panel/95 backdrop-blur-md md:inset-y-0 md:right-auto md:left-0 md:h-auto md:w-[68px] md:flex-col md:justify-start md:gap-1 md:border-t-0 md:border-r md:py-5"
+      className="fixed inset-x-0 bottom-0 z-30 flex h-16 items-center justify-around border-t border-hairline bg-panel/95 backdrop-blur-md md:inset-y-0 md:right-auto md:left-0 md:h-auto md:w-[var(--rail-w)] md:flex-col md:justify-start md:gap-1.5 md:border-t-0 md:border-r md:bg-[oklch(10%_0.004_60_/_0.9)] md:py-6"
     >
+      {/* Filete vertical que some nas pontas — remata a barra sem pesar. */}
+      <span
+        aria-hidden
+        className="absolute top-0 right-0 hidden h-full w-px bg-gradient-to-b from-transparent via-[oklch(78%_0.13_80_/_0.16)] to-transparent md:block"
+      />
+
       <Link
         href="/"
         aria-label="Arsenal — início"
-        className="mb-4 hidden shrink-0 rounded-full transition-opacity duration-200 hover:opacity-80 md:block"
+        className="group/logo relative mb-6 hidden shrink-0 md:block"
       >
+        {/* Halo atrás do monograma: dá presença sem tocar na marca. */}
+        <span
+          aria-hidden
+          className="absolute inset-0 -z-10 rounded-full bg-[radial-gradient(circle,oklch(78%_0.13_80_/_0.22),transparent_70%)] blur-md transition-opacity duration-500 group-hover/logo:opacity-100 md:opacity-70"
+        />
         <Image
           src="/logo-dw.png"
           alt="David William"
-          width={42}
-          height={42}
+          width={60}
+          height={60}
           priority
-          className="size-[42px]"
+          className="size-[60px] transition-transform duration-500 ease-out group-hover/logo:scale-[1.04]"
         />
       </Link>
 
@@ -58,13 +69,13 @@ export function Sidebar({ initials }: { initials: string }) {
             {active ? (
               <span
                 aria-hidden
-                className="absolute -left-[13px] hidden h-5 w-[2px] rounded-full bg-gold shadow-glow-sm md:block"
+                className="absolute -left-[22px] hidden h-5 w-[2px] rounded-full bg-gold shadow-glow-sm md:block"
               />
             ) : null}
 
             <span
               aria-hidden
-              className="pointer-events-none absolute left-[54px] z-40 hidden whitespace-nowrap rounded-lg border border-hairline bg-elevated px-2.5 py-1.5 text-xs text-ink opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 md:block"
+              className="pointer-events-none absolute left-[62px] z-40 hidden whitespace-nowrap rounded-lg border border-hairline bg-elevated px-2.5 py-1.5 text-xs text-ink opacity-0 shadow-lg transition-opacity duration-200 group-hover:opacity-100 md:block"
             >
               {item.label}
             </span>
