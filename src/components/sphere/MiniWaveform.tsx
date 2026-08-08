@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import type { LevelSource } from "@/lib/audio/levelStore";
+import { BRAND_RGB } from "@/lib/brand";
 
 /**
  * Espelho do espectro de voz. Desenha em canvas dentro do próprio rAF,
@@ -57,7 +58,7 @@ export function MiniWaveform({
 
         ctx.beginPath();
         ctx.roundRect(x, y, barWidth, h, barWidth / 2);
-        ctx.fillStyle = `rgba(245, 179, 1, ${(0.2 + smoothed[i] * 0.7).toFixed(3)})`;
+        ctx.fillStyle = `rgba(${BRAND_RGB.gold}, ${(0.2 + smoothed[i] * 0.7).toFixed(3)})`;
         ctx.fill();
       }
 

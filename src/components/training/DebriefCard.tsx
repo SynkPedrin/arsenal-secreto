@@ -29,7 +29,7 @@ function ScoreRing({ score }: { score: number }) {
           cy="60"
           r={radius}
           fill="none"
-          stroke="rgba(245,179,1,0.12)"
+          stroke="oklch(78% 0.13 80 / 0.12)"
           strokeWidth="6"
         />
         <circle

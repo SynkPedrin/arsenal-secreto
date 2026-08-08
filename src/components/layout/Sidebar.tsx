@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "@/lib/nav";
@@ -20,9 +21,20 @@ export function Sidebar({ initials }: { initials: string }) {
       aria-label="Navegação principal"
       className="fixed inset-x-0 bottom-0 z-30 flex h-16 items-center justify-around border-t border-hairline bg-panel/95 backdrop-blur-md md:inset-y-0 md:right-auto md:left-0 md:h-auto md:w-[68px] md:flex-col md:justify-start md:gap-1 md:border-t-0 md:border-r md:py-5"
     >
-      <span className="hidden md:mb-4 md:block" aria-hidden>
-        <span className="block size-2 rounded-full bg-gold shadow-glow-sm" />
-      </span>
+      <Link
+        href="/"
+        aria-label="Arsenal — início"
+        className="mb-4 hidden shrink-0 rounded-full transition-opacity duration-200 hover:opacity-80 md:block"
+      >
+        <Image
+          src="/logo-dw.png"
+          alt="David William"
+          width={42}
+          height={42}
+          priority
+          className="size-[42px]"
+        />
+      </Link>
 
       {NAV_ITEMS.map((item) => {
         const active = isActive(pathname, item.href);

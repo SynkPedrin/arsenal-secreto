@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { BRAND_RGB } from "@/lib/brand";
 import type { AssistantState } from "@/lib/chat/protocol";
 
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
@@ -194,7 +195,7 @@ export function ParticleSphere({
       // Núcleo.
       const coreR = baseRadius * (0.34 + audio * 0.1);
       const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR);
-      const hot = current.burn > 0.5 ? "180, 84, 26" : "245, 179, 1";
+      const hot = current.burn > 0.5 ? BRAND_RGB.amber : BRAND_RGB.gold;
       core.addColorStop(0, `rgba(${hot}, ${(0.3 * glow).toFixed(3)})`);
       core.addColorStop(1, `rgba(${hot}, 0)`);
       ctx.fillStyle = core;

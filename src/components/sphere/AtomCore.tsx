@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { BRAND_RGB } from "@/lib/brand";
 import type { AssistantState } from "@/lib/chat/protocol";
 
 /** Amostras por órbita. Suficiente para a elipse ficar lisa em qualquer tamanho. */
@@ -162,7 +163,7 @@ export function AtomCore({
       // mais próxima da câmera sai do canvas e é cortada na borda.
       const scale = size * 0.37 * current.radius * (1 + audio * 0.08);
       const fov = 4.5;
-      const hot = current.burn > 0.5 ? "180, 84, 26" : "245, 179, 1";
+      const hot = current.burn > 0.5 ? BRAND_RGB.amber : BRAND_RGB.gold;
       const glow = Math.min(1, current.glow * (1 + audio * 0.35) + flash * 0.3);
 
       const project = (p: Vec3) => {
@@ -231,7 +232,7 @@ export function AtomCore({
         cy,
         coreR,
       );
-      body.addColorStop(0, `rgba(255, 236, 180, ${(0.95 * glow).toFixed(3)})`);
+      body.addColorStop(0, `rgba(${BRAND_RGB.highlight}, ${(0.95 * glow).toFixed(3)})`);
       body.addColorStop(1, `rgba(${hot}, ${(0.8 * glow).toFixed(3)})`);
       ctx.fillStyle = body;
       ctx.beginPath();

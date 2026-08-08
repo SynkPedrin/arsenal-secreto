@@ -5,7 +5,7 @@ import Image from "next/image";
 import { ExternalLink, ImageOff, RefreshCw } from "lucide-react";
 
 /** Se o iframe não carregar nesse prazo, assumimos bloqueio e caímos no fallback. */
-const LOAD_TIMEOUT_MS = 7000;
+const LOAD_TIMEOUT_MS = 10_000;
 
 type Mode = "loading" | "framed" | "fallback";
 
@@ -63,6 +63,27 @@ export function SitePreview({
         <BrowserChrome url={url} />
 
         <div className="relative aspect-[16/10] w-full bg-void">
+          {/* O iframe nunca é desmontado: em conexão lenta ele estoura o
+              timeout e carrega depois, e aí o onLoad tira o fallback de cima. */}
+          <iframe
+            key={attempt}
+            src={url}
+            title="Arsenal Secreto"
+            onLoad={handleLoad}
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+            className={`size-full border-0 transition-opacity duration-700 ${
+              mode === "framed" ? "opacity-100" : "opacity-0"
+            }`}
+          />
+
+          {mode === "loading" ? (
+            <div className="pointer-events-none absolute inset-0 grid place-items-center">
+              <div className="animate-glow-breath size-16 rounded-full border border-hairline" />
+            </div>
+          ) : null}
+
           {mode === "fallback" ? (
             previewImage ? (
               <Image
@@ -74,10 +95,11 @@ export function SitePreview({
                 priority
               />
             ) : (
-              <div className="flex size-full flex-col items-center justify-center gap-3 px-6 text-center">
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-void px-6 text-center">
                 <ImageOff size={22} className="text-muted" aria-hidden />
                 <p className="text-sm text-muted">
-                  O site bloqueou a exibição embutida e ainda não há screenshot de fallback.
+                  A prévia demorou a responder. Se o site bloquear a exibição embutida, gere o
+                  screenshot de fallback.
                 </p>
                 <code className="font-mono text-[11px] text-gold-soft">
                   npm run capture-preview
@@ -92,27 +114,7 @@ export function SitePreview({
                 </button>
               </div>
             )
-          ) : (
-            <>
-              <iframe
-                key={attempt}
-                src={url}
-                title="Arsenal Secreto"
-                onLoad={handleLoad}
-                loading="lazy"
-                referrerPolicy="no-referrer"
-                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-                className={`size-full border-0 transition-opacity duration-700 ${
-                  mode === "framed" ? "opacity-100" : "opacity-0"
-                }`}
-              />
-              {mode === "loading" ? (
-                <div className="absolute inset-0 grid place-items-center">
-                  <div className="animate-glow-breath size-16 rounded-full border border-hairline" />
-                </div>
-              ) : null}
-            </>
-          )}
+          ) : null}
 
           {/* Véu inferior: escurece e desfoca os 30% de baixo sem travar o site. */}
           <div

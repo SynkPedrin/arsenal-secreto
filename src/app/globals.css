@@ -5,19 +5,35 @@
    Dark premium: preto profundo + dourado. Glow só em ativo.
    ───────────────────────────────────────────────────────────── */
 
+/*
+ * Paleta espelhada de arsenalsecreto.lovable.app — os valores OKLCH são os
+ * mesmos tokens da landing page, copiados sem conversão para não perder tom.
+ * O hex ao lado é só referência de leitura.
+ *
+ * O dourado da marca é champanhe (oklch chroma .13), não amarelo saturado, e
+ * as superfícies escuras são neutras quentes — sem tingir tudo de dourado.
+ */
 :root {
-  --bg-void: #050505;
-  --bg-panel: #0d0d0f;
-  --bg-elevated: #131317;
-  --gold-core: #f5b301;
-  --gold-soft: #e8c86a;
-  --gold-deep: #8a6404;
-  --gold-glow: rgba(245, 179, 1, 0.35);
-  --amber-burnt: #b4541a;
-  --text-primary: #f4f2ec;
-  --text-muted: #8a8578;
-  --border-subtle: rgba(245, 179, 1, 0.12);
-  --border-strong: rgba(245, 179, 1, 0.28);
+  --bg-void: oklch(12% 0 0); /* #060606 */
+  --bg-panel: oklch(16% 0.005 60); /* #0f0d0b */
+  --bg-elevated: oklch(22% 0.01 60); /* #1e1a16 */
+
+  --gold-core: oklch(78% 0.13 80); /* #e3ad4b */
+  --gold-soft: oklch(86% 0.1 85); /* #efcc83 */
+  --gold-deep: oklch(58% 0.11 70); /* #a36d24 */
+  --gold-glow: oklch(78% 0.13 80 / 0.35);
+  --amber-burnt: oklch(72% 0.16 60); /* #eb881f */
+  --danger: oklch(60% 0.22 25); /* #e62b34 */
+
+  --text-primary: oklch(98% 0 0); /* #f8f8f8 */
+  --text-muted: oklch(72% 0.01 60); /* #a9a39e */
+
+  /* Bordas neutras, como na LP. Só o estado ativo ganha dourado. */
+  --border-subtle: oklch(28% 0.01 70 / 0.6); /* #2c2824 a 60% */
+  --border-strong: oklch(78% 0.13 80 / 0.22);
+
+  --gradient-gold: linear-gradient(135deg, oklch(86% 0.1 85), oklch(62% 0.13 70));
+  --shadow-gold: 0 10px 40px -10px oklch(78% 0.13 80 / 0.35);
 }
 
 @theme inline {
@@ -28,6 +44,7 @@
   --color-gold-soft: var(--gold-soft);
   --color-gold-deep: var(--gold-deep);
   --color-amber-burnt: var(--amber-burnt);
+  --color-danger: var(--danger);
   --color-ink: var(--text-primary);
   --color-muted: var(--text-muted);
   --color-hairline: var(--border-subtle);
@@ -80,17 +97,17 @@
   }
   50% {
     opacity: 0.55;
-    box-shadow: 0 0 0 6px rgba(245, 179, 1, 0);
+    box-shadow: 0 0 0 6px oklch(78% 0.13 80 / 0);
   }
 }
 
 @keyframes glow-breath {
   0%,
   100% {
-    box-shadow: 0 0 18px rgba(245, 179, 1, 0.22);
+    box-shadow: 0 0 18px oklch(78% 0.13 80 / 0.22);
   }
   50% {
-    box-shadow: 0 0 44px rgba(245, 179, 1, 0.45);
+    box-shadow: 0 0 44px oklch(78% 0.13 80 / 0.45);
   }
 }
 
@@ -133,7 +150,7 @@ body::before {
   background:
     radial-gradient(
       120% 90% at 50% 0%,
-      rgba(245, 179, 1, 0.05) 0%,
+      oklch(78% 0.13 80 / 0.05) 0%,
       transparent 55%
     ),
     radial-gradient(100% 100% at 50% 50%, transparent 40%, rgba(0, 0, 0, 0.85) 100%);
@@ -229,7 +246,7 @@ body::after {
 .prose-arsenal code {
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.86em;
-  background: rgba(245, 179, 1, 0.09);
+  background: oklch(78% 0.13 80 / 0.09);
   border: 1px solid var(--border-subtle);
   border-radius: 5px;
   padding: 0.1em 0.35em;
@@ -284,7 +301,7 @@ body::after {
 }
 
 ::selection {
-  background: rgba(245, 179, 1, 0.28);
+  background: oklch(78% 0.13 80 / 0.28);
   color: var(--text-primary);
 }
 
@@ -296,12 +313,12 @@ body::after {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(245, 179, 1, 0.14);
+  background: oklch(78% 0.13 80 / 0.14);
   border-radius: 999px;
   border: 3px solid var(--bg-void);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(245, 179, 1, 0.3);
+  background: oklch(78% 0.13 80 / 0.3);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { BRAND_RGB } from "@/lib/brand";
 
 type Dot = { x: number; y: number; phase: number; speed: number; radius: number };
 
@@ -63,7 +64,7 @@ export function ParticleWaves({ density = 46 }: { density?: number }) {
 
         ctx.beginPath();
         ctx.arc(dot.x, y, dot.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(245, 179, 1, ${alpha.toFixed(3)})`;
+        ctx.fillStyle = `rgba(${BRAND_RGB.gold}, ${alpha.toFixed(3)})`;
         ctx.fill();
       }
 

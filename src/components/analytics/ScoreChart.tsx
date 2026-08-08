@@ -105,7 +105,7 @@ export function ScoreChart({ records }: { records: TrainingRecord[] }) {
                   x2={width - PAD.right}
                   y1={py(tick)}
                   y2={py(tick)}
-                  stroke="rgba(245,179,1,0.09)"
+                  stroke="oklch(78% 0.13 80 / 0.09)"
                   strokeWidth="1"
                 />
                 <text
@@ -125,7 +125,7 @@ export function ScoreChart({ records }: { records: TrainingRecord[] }) {
                 x2={px(hover)}
                 y1={PAD.top}
                 y2={PAD.top + innerH}
-                stroke="rgba(245,179,1,0.28)"
+                stroke="oklch(78% 0.13 80 / 0.28)"
                 strokeWidth="1"
               />
             ) : null}
