@@ -7,7 +7,7 @@ import { Message } from "@/components/chat/Message";
 import { useChat } from "@/components/chat/useChat";
 import { useSpeech } from "@/components/chat/useSpeech";
 import { useVoiceCapture } from "@/components/chat/useVoiceCapture";
-import { ParticleSphere } from "@/components/sphere/ParticleSphere";
+import { AtomCore } from "@/components/sphere/AtomCore";
 import { profilePayload, useSettings } from "@/lib/settings";
 import { recentDebriefs } from "@/lib/training/store";
 import { profileLabel, type Debrief, type TrainingSetup } from "@/lib/training/types";
@@ -179,12 +179,7 @@ export function SparringSession({
               inferno ? "border-amber-burnt/70" : "border-gold/40"
             }`}
           >
-            <ParticleSphere
-              state={sphereState}
-              levelSource={levelSource}
-              pulse={pulse}
-              size={40}
-            />
+            <AtomCore state={sphereState} levelSource={levelSource} pulse={pulse} size={40} />
           </div>
 
           <div className="min-w-0 flex-1">

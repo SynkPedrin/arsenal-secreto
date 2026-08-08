@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { greeting } from "@/lib/ai/persona";
 import { profilePayload, useSettings } from "@/lib/settings";
+import { AtomCore } from "@/components/sphere/AtomCore";
 import { MiniWaveform } from "@/components/sphere/MiniWaveform";
 import { ParticleSphere, StateCaption } from "@/components/sphere/ParticleSphere";
 import { Composer } from "./Composer";
@@ -170,7 +171,7 @@ export function ChatView() {
   return (
     <div className="flex h-dvh flex-col">
       <header className="flex shrink-0 items-center gap-3 border-b border-hairline px-6 py-3 md:px-10">
-        <ParticleSphere state={sphereState} levelSource={levelSource} pulse={pulse} size={46} />
+        <AtomCore state={sphereState} levelSource={levelSource} pulse={pulse} size={46} />
         <div className="min-w-0 flex-1">
           <p className="text-display text-sm text-ink">IA Arsenal</p>
           <StateCaption state={sphereState} />
