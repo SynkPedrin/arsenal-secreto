@@ -1,31 +1,31 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { GENERATION, MODELS } from "@/lib/ai/config";
+import { humanizeError } from "@/lib/ai/errors";
 import { openai } from "@/lib/ai/openai";
-import { systemPromptWithoutVault } from "@/lib/ai/persona";
+import { buildSystemPrompt } from "@/lib/ai/persona";
 import { encodeEvent } from "@/lib/chat/protocol";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** Traduz as falhas mais comuns da OpenAI em algo acionável. */
-function humanizeError(error: unknown): string {
-  const raw = error instanceof Error ? error.message : String(error);
-
-  if (/no credits remaining|insufficient_quota|exceeded your current quota/i.test(raw)) {
-    return "A conta da OpenAI está sem créditos. Adicione saldo em platform.openai.com/settings/organization/billing e tente de novo.";
-  }
-  if (/invalid[_ ]api[_ ]key|Incorrect API key/i.test(raw)) {
-    return "A OPENAI_API_KEY é inválida ou foi revogada. Gere uma nova e atualize o .env.local.";
-  }
-  if (/rate limit/i.test(raw)) {
-    return "Limite de requisições da OpenAI atingido. Aguarde alguns segundos.";
-  }
-  if (/model .* does not exist|do not have access to/i.test(raw)) {
-    return "A chave não tem acesso a este modelo. Ajuste ARSENAL_MODEL em src/lib/ai/config.ts.";
-  }
-  return raw;
-}
+const trainingSchema = z.object({
+  objective: z.string().min(1).max(600),
+  product: z.string().max(200).optional(),
+  ticket: z.number().nonnegative().optional(),
+  clientProfile: z.string().min(1).max(80),
+  difficulty: z.enum(["campo", "inferno"]),
+  recentDebriefs: z
+    .array(
+      z.object({
+        date: z.string().max(40),
+        score: z.number().int().min(0).max(10),
+        missingPlay: z.string().max(400),
+      }),
+    )
+    .max(3)
+    .optional(),
+});
 
 const bodySchema = z.object({
   messages: z
@@ -37,6 +37,15 @@ const bodySchema = z.object({
     )
     .min(1)
     .max(80),
+  profile: z
+    .object({
+      name: z.string().max(80).optional(),
+      product: z.string().max(200).optional(),
+      ticket: z.number().nonnegative().optional(),
+      niche: z.string().max(80).optional(),
+    })
+    .optional(),
+  training: trainingSchema.optional(),
 });
 
 export async function POST(request: Request) {
@@ -51,7 +60,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Mensagens inválidas." }, { status: 400 });
   }
 
-  const history = parsed.data.messages.slice(-GENERATION.historyWindow);
+  const { messages, profile, training } = parsed.data;
+  const history = messages.slice(-GENERATION.historyWindow);
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream<Uint8Array>({
@@ -59,17 +69,20 @@ export async function POST(request: Request) {
       const send = (chunk: string) => controller.enqueue(encoder.encode(chunk));
 
       try {
-        // Sem Supabase, o passo de recuperação não roda ainda; o estado é
-        // emitido mesmo assim para a esfera já ter o ciclo completo.
+        // O RAG entra aqui na F2. Até lá o cérebro chega vazio e o system
+        // prompt assume o modo "sem acervo", que proíbe citar calls.
         send(encodeEvent({ type: "state", state: "thinking" }));
+
+        const system = buildSystemPrompt({ sources: [], profile, training });
 
         const completion = await openai().chat.completions.create({
           model: MODELS.main,
-          temperature: GENERATION.temperature,
+          // Sparring precisa de mais improviso que consultoria.
+          temperature: training ? 0.75 : GENERATION.temperature,
           max_tokens: GENERATION.maxOutputTokens,
           stream: true,
           stream_options: { include_usage: true },
-          messages: [{ role: "system", content: systemPromptWithoutVault() }, ...history],
+          messages: [{ role: "system", content: system }, ...history],
         });
 
         let answering = false;

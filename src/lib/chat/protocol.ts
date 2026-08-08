@@ -22,6 +22,8 @@ export type ChatMessage = {
   content: string;
   sources?: RagSource[];
   error?: boolean;
+  /** Vai no histórico enviado ao modelo, mas não é renderizada. */
+  hidden?: boolean;
 };
 
 /** Serializa um evento no formato SSE (`data: {...}\n\n`). */

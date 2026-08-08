@@ -96,10 +96,30 @@ O vault fica **fora** do projeto, em `../arsenal secreto/`, e é apontado por `O
 | F0 | Fundação: Next + design system + shell + schema + RLS | ✅ |
 | F1 | Ingestão do vault (parser, chunking, hash, embeddings) | ⏳ |
 | F2 | RAG core (híbrido + RRF + grafo + reranking) | ⏳ |
-| F3 | Chat com streaming SSE e fontes citadas | ⏳ |
-| F4 | Esfera de partículas reativa | ⏳ |
-| F5 | Arsenal Secreto + Base Central | ⏳ |
+| F3 | Chat com streaming SSE e fontes citadas | ✅ sem RAG |
+| F4 | Esfera de partículas reativa | ✅ |
+| F5 | Arsenal Secreto ✅ · Base Central ⏳ | parcial |
 | F6 | Polimento, responsivo, estados vazios | ⏳ |
+| F7 | Voz: captura, esfera reativa, `/api/transcribe` | ✅ |
+| F8 | Voz: `/api/tts`, player, toggles | ✅ |
+| F9 | Modo Treinamento (sparring + debriefing) | ✅ local |
+
+O que está marcado ✅ roda ponta a ponta, mas **depende de crédito na conta OpenAI**
+para produzir resposta. O histórico de treinos persiste em `localStorage` até as
+chaves do Supabase entrarem — o formato do registro já é o da tabela
+`training_sessions`.
+
+## A IA
+
+A persona, os 4 modos (sparring, análise, consultor, pré-call) e as regras
+anti-alucinação vivem em [`src/lib/ai/persona.ts`](src/lib/ai/persona.ts). O prompt
+tem dois estados: **com cérebro** (cita fontes do vault) e **sem cérebro** (proibida
+de citar qualquer call — é o estado atual, até a F2 ligar o RAG).
+
+O cérebro fica em `../arsenal secreto/🧠 Arsenal-Brain/`, com a estrutura, os
+templates e as convenções descritas no README de lá. As notas geradas vieram como
+`status: rascunho` e **não são indexadas** — trocar para `status: pronto` ao
+preencher com material real.
 
 ## Segurança
 

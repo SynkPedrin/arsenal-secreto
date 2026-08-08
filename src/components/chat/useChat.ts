@@ -1,16 +1,28 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import {
-  readEventStream,
-  type AssistantState,
-  type ChatMessage,
-} from "@/lib/chat/protocol";
+import type { TrainingBlock, UserProfile } from "@/lib/ai/persona";
+import { readEventStream, type AssistantState, type ChatMessage } from "@/lib/chat/protocol";
 
-export function useChat() {
+/** Intervalo mínimo entre pulsos da esfera durante o streaming. */
+const PULSE_THROTTLE_MS = 220;
+
+export type ChatOptions = {
+  profile?: UserProfile;
+  training?: TrainingBlock;
+  /** Chamado com a resposta completa — usado pelo TTS. */
+  onReply?: (text: string) => void;
+};
+
+export function useChat({ profile, training, onReply }: ChatOptions = {}) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [state, setState] = useState<AssistantState>("idle");
+  const [pulse, setPulse] = useState(0);
+
   const abortRef = useRef<AbortController | null>(null);
+  const lastPulseRef = useRef(0);
+  const optionsRef = useRef({ profile, training, onReply });
+  optionsRef.current = { profile, training, onReply };
 
   const busy = state === "retrieving" || state === "thinking" || state === "answering";
 
@@ -27,19 +39,25 @@ export function useChat() {
     setState("idle");
   }, []);
 
+  /**
+   * Envia uma mensagem. `hidden` mantém o texto fora da tela mas dentro do
+   * histórico — é como o comando de abertura do sparring entra sem poluir o chat.
+   */
   const send = useCallback(
-    async (text: string) => {
+    async (text: string, options: { hidden?: boolean } = {}) => {
       const content = text.trim();
-      if (!content || busy) return;
+      if (!content) return;
+
+      abortRef.current?.abort();
 
       const userMessage: ChatMessage = {
         id: crypto.randomUUID(),
         role: "user",
         content,
+        hidden: options.hidden,
       };
       const replyId = crypto.randomUUID();
 
-      // Captura o histórico já com a nova pergunta, sem depender do setState.
       let payload: ChatMessage[] = [];
       setMessages((prev) => {
         payload = [...prev, userMessage];
@@ -50,18 +68,19 @@ export function useChat() {
       abortRef.current = controller;
       setState("retrieving");
 
-      const appendToReply = (chunk: string) =>
-        setMessages((prev) =>
-          prev.map((m) => (m.id === replyId ? { ...m, content: m.content + chunk } : m)),
-        );
+      let full = "";
 
       try {
+        const { profile: p, training: t, onReply: reply } = optionsRef.current;
+
         const response = await fetch("/api/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           signal: controller.signal,
           body: JSON.stringify({
             messages: payload.map(({ role, content: c }) => ({ role, content: c })),
+            ...(p && Object.keys(p).length > 0 ? { profile: p } : {}),
+            ...(t ? { training: t } : {}),
           }),
         });
 
@@ -78,14 +97,28 @@ export function useChat() {
             case "state":
               setState(event.state);
               break;
-            case "delta":
-              appendToReply(event.text);
+
+            case "delta": {
+              full += event.text;
+              const snapshot = full;
+              setMessages((prev) =>
+                prev.map((m) => (m.id === replyId ? { ...m, content: snapshot } : m)),
+              );
+
+              const now = performance.now();
+              if (now - lastPulseRef.current > PULSE_THROTTLE_MS) {
+                lastPulseRef.current = now;
+                setPulse((n) => n + 1);
+              }
               break;
+            }
+
             case "sources":
               setMessages((prev) =>
                 prev.map((m) => (m.id === replyId ? { ...m, sources: event.sources } : m)),
               );
               break;
+
             case "error":
               setMessages((prev) =>
                 prev.map((m) =>
@@ -93,18 +126,20 @@ export function useChat() {
                 ),
               );
               break;
+
             case "done":
               break;
           }
         }
 
         setState("idle");
+        if (full) reply?.(full);
+        return full;
       } catch (error) {
         if (controller.signal.aborted) {
-          // Cancelamento do usuário: mantém o que já chegou.
           setMessages((prev) => prev.filter((m) => m.id !== replyId || m.content.length > 0));
           setState("idle");
-          return;
+          return full;
         }
 
         setMessages((prev) =>
@@ -121,12 +156,13 @@ export function useChat() {
         );
         setState("error");
         setTimeout(() => setState("idle"), 2400);
+        return full;
       } finally {
         abortRef.current = null;
       }
     },
-    [busy],
+    [],
   );
 
-  return { messages, state, busy, send, stop, reset };
+  return { messages, state, busy, pulse, send, stop, reset };
 }

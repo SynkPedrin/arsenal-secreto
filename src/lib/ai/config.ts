@@ -12,7 +12,14 @@ export const MODELS = {
   light: process.env.ARSENAL_MODEL_LIGHT ?? "gpt-4o-mini",
   /** Embeddings do vault. */
   embedding: "text-embedding-3-large",
+  /** Voz → texto. Cai para whisper-1 se a conta não tiver acesso. */
+  transcription: process.env.ARSENAL_MODEL_STT ?? "gpt-4o-mini-transcribe",
+  /** Texto → voz. */
+  tts: process.env.ARSENAL_MODEL_TTS ?? "gpt-4o-mini-tts",
 } as const;
+
+/** Voz da IA na resposta falada. */
+export const TTS_VOICE = "onyx";
 
 export const EMBEDDING_DIMENSIONS = 1536;
 

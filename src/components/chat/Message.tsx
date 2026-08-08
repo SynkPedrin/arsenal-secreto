@@ -25,7 +25,17 @@ function UserMessage({ content }: { content: string }) {
   );
 }
 
-function AssistantMessage({ message, streaming }: { message: ChatMessage; streaming: boolean }) {
+function AssistantMessage({
+  message,
+  streaming,
+  label,
+  tone,
+}: {
+  message: ChatMessage;
+  streaming: boolean;
+  label?: string;
+  tone: "gold" | "burn";
+}) {
   if (message.error) {
     return (
       <div className="flex items-start gap-3 rounded-2xl border border-amber-burnt/40 bg-amber-burnt/[0.07] px-4 py-3">
@@ -37,6 +47,16 @@ function AssistantMessage({ message, streaming }: { message: ChatMessage; stream
 
   return (
     <div>
+      {/* No sparring, quem fala é o cliente — deixar isso explícito evita
+          que o closer trate a IA como mentora no meio do treino. */}
+      {label ? (
+        <p
+          className={`text-meta mb-2 ${tone === "burn" ? "text-amber-burnt" : "text-gold-soft"}`}
+        >
+          {label}
+        </p>
+      ) : null}
+
       <div
         className="prose-arsenal text-[15px] leading-relaxed text-ink"
         aria-live={streaming ? "polite" : undefined}
@@ -66,13 +86,28 @@ function AssistantMessage({ message, streaming }: { message: ChatMessage; stream
   );
 }
 
-export function Message({ message, streaming }: { message: ChatMessage; streaming: boolean }) {
+export function Message({
+  message,
+  streaming,
+  assistantLabel,
+  assistantTone = "gold",
+}: {
+  message: ChatMessage;
+  streaming: boolean;
+  assistantLabel?: string;
+  assistantTone?: "gold" | "burn";
+}) {
   return (
     <div className="animate-rise">
       {message.role === "user" ? (
         <UserMessage content={message.content} />
       ) : (
-        <AssistantMessage message={message} streaming={streaming} />
+        <AssistantMessage
+          message={message}
+          streaming={streaming}
+          label={assistantLabel}
+          tone={assistantTone}
+        />
       )}
     </div>
   );
