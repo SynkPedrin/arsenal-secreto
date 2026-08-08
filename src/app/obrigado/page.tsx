@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import { BackToVault } from "@/components/commerce/BackToVault";
 import { ClaimAccess } from "@/components/commerce/ClaimAccess";
 import { ParticleWaves } from "@/components/arsenal/ParticleWaves";
 import { PRODUCTS } from "@/lib/commerce/catalog";
@@ -33,7 +34,9 @@ export default async function ObrigadoPage({
     <div className="relative isolate min-h-dvh overflow-hidden">
       <ParticleWaves density={30} />
 
-      <div className="mx-auto w-full max-w-2xl px-6 pt-20 pb-24 md:px-10">
+      <div className="mx-auto w-full max-w-2xl px-6 pt-16 pb-24 md:px-10">
+        <BackToVault className="animate-rise mb-8" />
+
         <header className="animate-rise mb-9 text-center">
           <span className="mb-5 inline-grid size-14 place-items-center rounded-full border border-hairline-strong bg-gold/[0.08]">
             <CheckCircle2 size={24} className="text-gold" aria-hidden />

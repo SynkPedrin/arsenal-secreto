@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { CircleDashed, Lock, PlayCircle, ShieldCheck } from "lucide-react";
+import { CircleDashed, ExternalLink, Lock, PlayCircle, ShieldCheck } from "lucide-react";
+import { BackToVault } from "@/components/commerce/BackToVault";
 import { ClaimAccess } from "@/components/commerce/ClaimAccess";
 import { getAccess } from "@/lib/commerce/access";
 import { PRODUCTS } from "@/lib/commerce/catalog";
@@ -25,6 +26,8 @@ function Gate({
 
   return (
     <Shell>
+      <BackToVault className="animate-rise mb-6" />
+
       <div className="panel animate-rise p-8 md:p-10">
         <span className="mb-6 inline-grid size-12 place-items-center rounded-full border border-hairline bg-void">
           <Lock size={20} className="text-gold-deep" aria-hidden />
@@ -36,18 +39,27 @@ function Gate({
         <div className="mt-8">{children}</div>
 
         <div className="mt-9 border-t border-hairline pt-6">
-          <p className="text-xs leading-relaxed text-muted">
-            Ainda não comprou?{" "}
+          <p className="mb-4 text-xs leading-relaxed text-muted">
+            Ainda não comprou? Veja o {product.name} antes de decidir.
+          </p>
+
+          <div className="flex flex-col gap-2.5 sm:flex-row">
+            <Link
+              href="/arsenal-secreto"
+              className="flex flex-1 items-center justify-center gap-2 rounded-full border border-hairline-strong bg-gold/[0.07] py-3 text-xs text-gold transition-all duration-200 hover:bg-gold/15"
+            >
+              Ver a página de vendas
+            </Link>
             <a
               href={product.salesUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gold-soft underline underline-offset-4"
+              className="flex flex-1 items-center justify-center gap-2 rounded-full border border-hairline py-3 text-xs text-muted transition-all duration-200 hover:border-hairline-strong hover:text-gold-soft"
             >
-              Conheça o {product.name}
+              Abrir o site
+              <ExternalLink size={12} strokeWidth={1.9} aria-hidden />
             </a>
-            .
-          </p>
+          </div>
         </div>
       </div>
     </Shell>
@@ -101,6 +113,8 @@ export default async function CursoPage() {
 
   return (
     <Shell>
+      <BackToVault className="animate-rise mb-6" />
+
       <header className="animate-rise mb-9">
         <div className="mb-4 flex items-center gap-2">
           <ShieldCheck size={14} className="text-gold" aria-hidden />
