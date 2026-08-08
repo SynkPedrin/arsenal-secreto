@@ -90,6 +90,34 @@ export type TokenUsageRow = Timestamped & {
   completion_tokens: number;
 };
 
+export type PurchaseStatus = "approved" | "refunded" | "chargeback" | "canceled" | "expired";
+
+export type PurchaseRow = Timestamped & {
+  id: string;
+  transaction: string;
+  event: string;
+  product_slug: string;
+  hotmart_product_id: string | null;
+  buyer_email: string;
+  buyer_name: string | null;
+  status: PurchaseStatus;
+  amount: number | null;
+  currency: string | null;
+  payload: Json;
+  updated_at: string;
+};
+
+export type EntitlementRow = {
+  id: string;
+  user_id: string;
+  product_slug: string;
+  purchase_id: string | null;
+  source: string;
+  status: "active" | "revoked";
+  granted_at: string;
+  revoked_at: string | null;
+};
+
 type Table<Row, Insert = Partial<Row>, Update = Partial<Row>> = {
   Row: Row;
   Insert: Insert;
@@ -107,9 +135,16 @@ export type Database = {
       messages: Table<MessageRow>;
       sync_runs: Table<SyncRunRow>;
       token_usage: Table<TokenUsageRow>;
+      purchases: Table<PurchaseRow>;
+      entitlements: Table<EntitlementRow>;
     };
     Views: Record<never, never>;
-    Functions: Record<never, never>;
+    Functions: {
+      claim_entitlements: {
+        Args: { p_user_id: string };
+        Returns: number;
+      };
+    };
     Enums: Record<never, never>;
     CompositeTypes: Record<never, never>;
   };

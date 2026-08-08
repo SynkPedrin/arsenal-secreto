@@ -27,9 +27,12 @@ function BrowserChrome({ url }: { url: string }) {
 export function SitePreview({
   url,
   previewImage,
+  cta,
 }: {
   url: string;
   previewImage: string | null;
+  /** Destino do botão: página de vendas antes do lançamento, checkout depois. */
+  cta: { label: string; href: string };
 }) {
   const [mode, setMode] = useState<Mode>("loading");
   const [attempt, setAttempt] = useState(0);
@@ -120,12 +123,14 @@ export function SitePreview({
       </div>
 
       <a
-        href={url}
+        href={cta.href}
         target="_blank"
         rel="noopener noreferrer"
         className="animate-glow-breath absolute bottom-8 left-1/2 flex -translate-x-1/2 items-center gap-2.5 rounded-full border border-gold/50 bg-gold/10 px-8 py-3.5 backdrop-blur-md transition-all duration-300 hover:scale-[1.03] hover:border-gold hover:bg-gold/18"
       >
-        <span className="text-display text-sm tracking-[0.14em] text-gold uppercase">Em breve</span>
+        <span className="text-display text-sm tracking-[0.14em] text-gold uppercase">
+          {cta.label}
+        </span>
         <ExternalLink size={14} strokeWidth={2} className="text-gold" aria-hidden />
       </a>
     </div>

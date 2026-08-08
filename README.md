@@ -35,6 +35,11 @@ npm run dev                    # http://localhost:3100
 | `SUPABASE_SERVICE_ROLE_KEY` | **servidor/scripts apenas** | Ingestão (bypassa RLS) |
 | `OBSIDIAN_VAULT_PATH` | script local | Caminho absoluto do vault |
 | `ARSENAL_SECRETO_URL` | ambos | Site exibido na aba do cofre |
+| `HOTMART_HOTTOK` | **servidor** | Token do postback da Hotmart |
+| `NEXT_PUBLIC_ARSENAL_HOTMART_PRODUCT_ID` | público | Casa o webhook com o slug do catálogo |
+| `NEXT_PUBLIC_ARSENAL_CHECKOUT_URL` | público | Link de checkout (vazio antes do lançamento) |
+| `NEXT_PUBLIC_ARSENAL_SALES_URL` | público | Página de vendas |
+| `NEXT_PUBLIC_ARSENAL_PRODUCT_STATUS` | público | `coming_soon` ou `live` |
 
 `src/lib/env.server.ts` importa `server-only`: se um componente de cliente puxar um segredo, o build quebra em vez de vazar.
 
@@ -121,6 +126,44 @@ O cérebro fica em `../arsenal secreto/🧠 Arsenal-Brain/`, com a estrutura, os
 templates e as convenções descritas no README de lá. As notas geradas vieram como
 `status: rascunho` e **não são indexadas** — trocar para `status: pronto` ao
 preencher com material real.
+
+## Esteira de compra (Hotmart)
+
+```
+página de vendas → checkout Hotmart → pagamento
+                                          │
+              ┌───────────────────────────┴──────────────────┐
+              ▼                                              ▼
+   webhook POST /api/webhooks/hotmart          comprador volta para /obrigado
+   (server-to-server, valida o hottok)         informa o e-mail da compra
+              │                                              │
+              ▼                                              ▼
+   grava em `purchases`                        magic link → /auth/callback
+                          └──────► claim_entitlements() ◄────┘
+                                          │
+                                          ▼
+                            `entitlements` → /curso liberado
+```
+
+**O e-mail digitado não libera nada.** Ele só dispara um magic link; quem prova a
+titularidade é o clique no link recebido naquele endereço, verificado pelo Supabase
+Auth. `claim_entitlements` recusa usuário com e-mail não confirmado.
+
+Não existe bypass de acesso: sem Supabase, `/curso` responde "não configurado" —
+nunca "liberado". Reembolso e chargeback revogam na hora, e um retry atrasado de
+aprovação não ressuscita acesso já reembolsado.
+
+### Configurar na Hotmart
+
+1. **Ferramentas → Webhook (Postback)** → URL `https://SEU-DOMINIO/api/webhooks/hotmart`,
+   versão 2.0. Copie o *hottok* para `HOTMART_HOTTOK`.
+2. Eventos: compra aprovada, completa, reembolso, chargeback, cancelamento.
+3. **Página de obrigado** → `https://SEU-DOMINIO/obrigado`.
+4. Preencha `NEXT_PUBLIC_ARSENAL_HOTMART_PRODUCT_ID` e `NEXT_PUBLIC_ARSENAL_CHECKOUT_URL`.
+5. No lançamento, troque `NEXT_PUBLIC_ARSENAL_PRODUCT_STATUS` para `live`.
+
+O conteúdo do curso vive em [`src/lib/commerce/catalog.ts`](src/lib/commerce/catalog.ts) —
+o banco guarda só o que é transacional.
 
 ## Segurança
 

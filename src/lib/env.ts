@@ -1,28 +1,30 @@
-import { z } from "zod";
-
 /**
  * Ambiente público — o que pode chegar ao browser.
  * As referências a process.env.NEXT_PUBLIC_* precisam ser literais
  * para o Next inlinar os valores no bundle.
+ *
+ * Nada aqui lança no import: o app precisa continuar buildando e rodando
+ * antes das chaves existirem. Quem realmente depende do Supabase chama
+ * `requireSupabaseConfig()` e recebe um erro claro no ponto de uso.
  */
-const publicSchema = z.object({
-  NEXT_PUBLIC_SUPABASE_URL: z.string().url("NEXT_PUBLIC_SUPABASE_URL precisa ser uma URL válida"),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1, "NEXT_PUBLIC_SUPABASE_ANON_KEY vazia"),
-  NEXT_PUBLIC_ARSENAL_SECRETO_URL: z.string().url().default("https://arsenalsecreto.lovable.app/"),
-});
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 
-const parsed = publicSchema.safeParse({
-  NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-  NEXT_PUBLIC_ARSENAL_SECRETO_URL: process.env.NEXT_PUBLIC_ARSENAL_SECRETO_URL,
-});
+export const publicEnv = {
+  supabaseUrl: url,
+  supabaseAnonKey: anonKey,
+  arsenalSecretoUrl:
+    process.env.NEXT_PUBLIC_ARSENAL_SECRETO_URL ?? "https://arsenalsecreto.lovable.app/",
+} as const;
 
-if (!parsed.success) {
-  throw new Error(
-    `Variáveis de ambiente públicas inválidas:\n${parsed.error.issues
-      .map((i) => `  · ${i.path.join(".")}: ${i.message}`)
-      .join("\n")}\n\nPreencha .env.local a partir de .env.example.`,
-  );
+/** true quando dá para falar com o Supabase. Telas usam isto para degradar. */
+export const isSupabaseConfigured = Boolean(url && anonKey);
+
+export function requireSupabaseConfig(): { url: string; anonKey: string } {
+  if (!isSupabaseConfigured) {
+    throw new Error(
+      "Supabase não configurado: preencha NEXT_PUBLIC_SUPABASE_URL e NEXT_PUBLIC_SUPABASE_ANON_KEY em .env.local.",
+    );
+  }
+  return { url, anonKey };
 }
-
-export const publicEnv = parsed.data;
