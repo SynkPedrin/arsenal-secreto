@@ -18,6 +18,8 @@ export type Settings = {
   directSend: boolean;
   speakReplies: boolean;
   voiceSpeed: number;
+  /** null = microfone padrão do sistema. */
+  micDeviceId: string | null;
 };
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -29,6 +31,7 @@ export const DEFAULT_SETTINGS: Settings = {
   directSend: false,
   speakReplies: false,
   voiceSpeed: 1.05,
+  micDeviceId: null,
 };
 
 const KEY = "arsenal:settings";

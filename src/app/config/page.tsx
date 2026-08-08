@@ -1,5 +1,6 @@
 "use client";
 
+import { MicPicker } from "@/components/chat/MicPicker";
 import { MODELS } from "@/lib/ai/config";
 import { useSettings } from "@/lib/settings";
 
@@ -125,6 +126,11 @@ export default function ConfigPage() {
             placeholder="15000"
           />
         </div>
+      </section>
+
+      <section className="panel animate-rise mb-6 p-6 md:p-8">
+        <h2 className="text-display mb-6 text-lg text-ink">Microfone</h2>
+        <MicPicker />
       </section>
 
       <section className="panel animate-rise mb-6 p-6 md:p-8">

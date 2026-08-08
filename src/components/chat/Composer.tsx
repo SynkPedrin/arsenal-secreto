@@ -57,13 +57,25 @@ export function Composer({
         </button>
 
         {recording ? (
-          <div className="flex min-w-0 flex-1 items-center gap-3 py-2">
-            {/* Indicador de gravação: o mic nunca fica aberto em silêncio visual. */}
-            <span className="flex shrink-0 items-center gap-2">
-              <span className="animate-pulse-dot size-2 rounded-full bg-amber-burnt" />
-              <span className="text-meta text-gold-soft">Gravando</span>
-            </span>
-            <MiniWaveform levelSource={voice.level} active width={160} />
+          <div className="min-w-0 flex-1 py-1.5">
+            <div className="flex items-center gap-3">
+              {/* Indicador de gravação: o mic nunca fica aberto em silêncio visual. */}
+              <span className="animate-pulse-dot size-2 shrink-0 rounded-full bg-amber-burnt" />
+              <MiniWaveform levelSource={voice.level} active width={110} height={20} />
+              <span className="text-meta min-w-0 truncate">
+                {voice.activeDevice?.label ?? "Microfone"}
+              </span>
+            </div>
+
+            {/* Transcrição ao vivo: você vê o que está sendo entendido enquanto fala. */}
+            <p
+              className={`mt-1.5 line-clamp-2 text-[15px] leading-snug ${
+                voice.liveTranscript ? "text-ink" : "text-muted"
+              }`}
+              aria-live="polite"
+            >
+              {voice.liveTranscript || "Fale — eu transcrevo aqui."}
+            </p>
           </div>
         ) : (
           <textarea
@@ -129,6 +141,8 @@ export function Composer({
 
       {voice.error ? (
         <p className="mt-2 px-4 text-xs text-amber-burnt">{voice.error}</p>
+      ) : voice.notice ? (
+        <p className="mt-2 px-4 text-xs text-muted">{voice.notice}</p>
       ) : autoSendArmed ? (
         <p className="mt-2 px-4 text-xs text-muted">
           Enviando em instantes — comece a digitar para editar antes.

@@ -99,6 +99,7 @@ export function SparringSession({
 
   const voice = useVoiceCapture({
     autoStopOnSilence: settings.autoStopOnSilence,
+    deviceId: settings.micDeviceId,
     onTranscript: (text) => {
       setDraft(text);
       if (settings.directSend) {

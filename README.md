@@ -69,7 +69,8 @@ arsenal-app/
 ├── src/
 │   ├── app/                     # rotas (App Router)
 │   │   ├── page.tsx             # Home / IA
-│   │   ├── base-central/        # gestão do cérebro
+│   │   ├── analytics/           # leitura dos treinos e calls
+│   │   ├── treinamento/         # sparring
 │   │   ├── arsenal-secreto/     # prévia do cofre
 │   │   ├── conversas/           # histórico
 │   │   └── config/              # modelo, persona, RAG
@@ -98,7 +99,7 @@ O vault fica **fora** do projeto, em `../arsenal secreto/`, e é apontado por `O
 | F2 | RAG core (híbrido + RRF + grafo + reranking) | ⏳ |
 | F3 | Chat com streaming SSE e fontes citadas | ✅ sem RAG |
 | F4 | Esfera de partículas reativa | ✅ |
-| F5 | Arsenal Secreto ✅ · Base Central ⏳ | parcial |
+| F5 | Arsenal Secreto ✅ · Analytics ✅ (substituiu a Base Central) | ✅ |
 | F6 | Polimento, responsivo, estados vazios | ⏳ |
 | F7 | Voz: captura, esfera reativa, `/api/transcribe` | ✅ |
 | F8 | Voz: `/api/tts`, player, toggles | ✅ |
