@@ -4,36 +4,28 @@ import { z } from "zod";
 /**
  * Segredos. O import de "server-only" faz o build quebrar se algum
  * componente de cliente puxar este módulo, direta ou indiretamente.
+ *
+ * A validação é granular e preguiçosa de propósito: quem só precisa da
+ * OpenAI não deve falhar porque o Supabase ainda não foi configurado.
  */
-const serverSchema = z.object({
-  OPENAI_API_KEY: z.string().min(1, "OPENAI_API_KEY ausente"),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, "SUPABASE_SERVICE_ROLE_KEY ausente"),
-  ARSENAL_SECRETO_URL: z.string().url().default("https://arsenalsecreto.lovable.app/"),
-});
-
-let cached: z.infer<typeof serverSchema> | null = null;
-
-/**
- * Lazy: a validação só roda quando um segredo é realmente usado.
- * Assim `next build` não exige as chaves para renderizar telas estáticas.
- */
-export function serverEnv(): z.infer<typeof serverSchema> {
-  if (cached) return cached;
-
-  const parsed = serverSchema.safeParse({
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
-    ARSENAL_SECRETO_URL: process.env.ARSENAL_SECRETO_URL,
-  });
-
+function required(name: string, value: string | undefined): string {
+  const parsed = z.string().min(1).safeParse(value);
   if (!parsed.success) {
     throw new Error(
-      `Variáveis de ambiente de servidor inválidas:\n${parsed.error.issues
-        .map((i) => `  · ${i.path.join(".")}: ${i.message}`)
-        .join("\n")}`,
+      `Variável de ambiente ausente: ${name}. Preencha .env.local a partir de .env.example.`,
     );
   }
+  return parsed.data;
+}
 
-  cached = parsed.data;
-  return cached;
+export function openaiApiKey(): string {
+  return required("OPENAI_API_KEY", process.env.OPENAI_API_KEY);
+}
+
+export function supabaseServiceRoleKey(): string {
+  return required("SUPABASE_SERVICE_ROLE_KEY", process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
+export function arsenalSecretoUrl(): string {
+  return process.env.ARSENAL_SECRETO_URL ?? "https://arsenalsecreto.lovable.app/";
 }

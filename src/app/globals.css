@@ -44,6 +44,32 @@
   --animate-pulse-dot: pulse-dot 2.4s ease-in-out infinite;
   --animate-glow-breath: glow-breath 3.6s ease-in-out infinite;
   --animate-rise: rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-orbit: orbit 22s linear infinite;
+  --animate-orbit-rev: orbit-rev 16s linear infinite;
+  --animate-ripple: ripple 2.6s ease-out infinite;
+}
+
+@keyframes orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbit-rev {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes ripple {
+  from {
+    transform: scale(0.7);
+    opacity: 0.5;
+  }
+  to {
+    transform: scale(1.55);
+    opacity: 0;
+  }
 }
 
 @keyframes pulse-dot {
@@ -139,6 +165,115 @@ body::after {
   background-color: var(--bg-panel);
   border: 1px solid var(--border-subtle);
   border-radius: 1rem;
+}
+
+/* ── Markdown das respostas da IA ─────────────────────────── */
+
+.prose-arsenal > :first-child {
+  margin-top: 0;
+}
+.prose-arsenal > :last-child {
+  margin-bottom: 0;
+}
+.prose-arsenal p,
+.prose-arsenal ul,
+.prose-arsenal ol,
+.prose-arsenal pre,
+.prose-arsenal blockquote,
+.prose-arsenal table {
+  margin-block: 0.85em;
+}
+.prose-arsenal h1,
+.prose-arsenal h2,
+.prose-arsenal h3 {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-stretch: 112%;
+  font-weight: 600;
+  line-height: 1.25;
+  margin-block: 1.4em 0.6em;
+}
+.prose-arsenal h1 {
+  font-size: 1.35em;
+}
+.prose-arsenal h2 {
+  font-size: 1.18em;
+}
+.prose-arsenal h3 {
+  font-size: 1.05em;
+}
+.prose-arsenal ul,
+.prose-arsenal ol {
+  padding-left: 1.35em;
+}
+.prose-arsenal ul {
+  list-style: disc;
+}
+.prose-arsenal ol {
+  list-style: decimal;
+}
+.prose-arsenal li {
+  margin-block: 0.3em;
+}
+.prose-arsenal li::marker {
+  color: var(--gold-deep);
+}
+.prose-arsenal strong {
+  color: var(--gold-soft);
+  font-weight: 600;
+}
+.prose-arsenal a {
+  color: var(--gold-core);
+  text-underline-offset: 3px;
+  text-decoration: underline;
+}
+.prose-arsenal code {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.86em;
+  background: rgba(245, 179, 1, 0.09);
+  border: 1px solid var(--border-subtle);
+  border-radius: 5px;
+  padding: 0.1em 0.35em;
+}
+.prose-arsenal pre {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.9rem;
+  padding: 1rem 1.1rem;
+  overflow-x: auto;
+}
+.prose-arsenal pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: 0.82em;
+  line-height: 1.6;
+}
+.prose-arsenal blockquote {
+  border-left: 2px solid var(--gold-deep);
+  padding-left: 1em;
+  color: var(--text-muted);
+}
+.prose-arsenal table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92em;
+  display: block;
+  overflow-x: auto;
+}
+.prose-arsenal th,
+.prose-arsenal td {
+  border: 1px solid var(--border-subtle);
+  padding: 0.5em 0.75em;
+  text-align: left;
+}
+.prose-arsenal th {
+  color: var(--gold-soft);
+  font-weight: 600;
+}
+.prose-arsenal hr {
+  border: 0;
+  border-top: 1px solid var(--border-subtle);
+  margin-block: 1.6em;
 }
 
 /* Foco visível dourado em tudo que é interativo. */
