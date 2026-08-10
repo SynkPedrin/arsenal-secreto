@@ -1,6 +1,6 @@
 # ARSENAL
 
-Plataforma de IA privada. **GPT como motor de pensamento, o vault do Obsidian como cérebro**, ligados por um pipeline de RAG híbrido (vetorial + full-text + grafo de wikilinks + reranking).
+Plataforma de IA privada. **Groq como motor de pensamento, o vault do Obsidian como cérebro**, ligados por um pipeline de RAG híbrido (vetorial + full-text + grafo de wikilinks + reranking).
 
 ---
 
@@ -14,7 +14,7 @@ Plataforma de IA privada. **GPT como motor de pensamento, o vault do Obsidian co
   ```
 
 - Um projeto **Supabase** (Postgres + pgvector).
-- Uma chave da **OpenAI**.
+- Uma chave da **Groq** ([console.groq.com](https://console.groq.com)).
 
 ## Setup
 
@@ -29,7 +29,7 @@ npm run dev                    # http://localhost:3100
 
 | Variável | Onde vive | Para quê |
 |---|---|---|
-| `OPENAI_API_KEY` | servidor/scripts | Geração e embeddings |
+| `GROQ_API_KEY` | **servidor** | Chat e transcrição |
 | `NEXT_PUBLIC_SUPABASE_URL` | público | Endpoint do projeto |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | público | Acesso sob RLS |
 | `SUPABASE_SERVICE_ROLE_KEY` | **servidor/scripts apenas** | Ingestão (bypassa RLS) |
@@ -107,13 +107,41 @@ O vault fica **fora** do projeto, em `../arsenal secreto/`, e é apontado por `O
 | F5 | Arsenal Secreto ✅ · Analytics ✅ (substituiu a Base Central) | ✅ |
 | F6 | Polimento, responsivo, estados vazios | ⏳ |
 | F7 | Voz: captura, esfera reativa, `/api/transcribe` | ✅ |
-| F8 | Voz: `/api/tts`, player, toggles | ✅ |
+| F8 | Voz da IA (síntese do navegador) + toggles | ✅ |
 | F9 | Modo Treinamento (sparring + debriefing) | ✅ local |
 
-O que está marcado ✅ roda ponta a ponta, mas **depende de crédito na conta OpenAI**
-para produzir resposta. O histórico de treinos persiste em `localStorage` até as
-chaves do Supabase entrarem — o formato do registro já é o da tabela
-`training_sessions`.
+Tudo marcado ✅ responde de verdade pela Groq. O histórico de treinos persiste em
+`localStorage` até as chaves do Supabase entrarem — o formato do registro já é o
+da tabela `training_sessions`.
+
+## O motor
+
+**Groq**, via endpoint compatível com a API da OpenAI — o SDK é o mesmo, muda a
+baseURL e a chave ([`src/lib/ai/llm.ts`](src/lib/ai/llm.ts)).
+
+| Função | Modelo |
+|---|---|
+| Resposta | `openai/gpt-oss-120b` |
+| Tarefas leves | `llama-3.1-8b-instant` |
+| Transcrição | `whisper-large-v3-turbo` |
+| Voz da IA | síntese do navegador (pt-BR) |
+| Embeddings | **pendente** |
+
+Dois buracos do catálogo da Groq, e o que foi feito com cada um:
+
+- **Sem TTS em português.** A Groq só tem voz em inglês (orpheus). A fala usa
+  `speechSynthesis` do navegador, que tem vozes pt-BR nativas e custo zero. Como
+  a API não expõe o áudio, a esfera pulsa por evento de fronteira de palavra em
+  vez de amplitude real — acompanha o ritmo, não o envelope.
+- **Sem embeddings.** Nenhum modelo do catálogo gera vetores. Quando a F1
+  indexar o vault, o embedding vai precisar de outra origem; as opções e o
+  impacto na dimensão da coluna estão em
+  [`src/lib/ai/config.ts`](src/lib/ai/config.ts).
+
+Os modelos `gpt-oss` emitem tokens de raciocínio antes do conteúdo. No chat isso
+é latência pura, então `reasoning_effort` fica em `low`; no debriefing e no
+diagnóstico do Analytics, onde julgar bem vale mais que responder rápido, sobe
+para `medium`.
 
 ## A IA
 

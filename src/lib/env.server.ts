@@ -6,7 +6,7 @@ import { z } from "zod";
  * componente de cliente puxar este módulo, direta ou indiretamente.
  *
  * A validação é granular e preguiçosa de propósito: quem só precisa da
- * OpenAI não deve falhar porque o Supabase ainda não foi configurado.
+ * Groq não deve falhar porque o Supabase ainda não foi configurado.
  */
 function required(name: string, value: string | undefined): string {
   const parsed = z.string().min(1).safeParse(value);
@@ -18,8 +18,9 @@ function required(name: string, value: string | undefined): string {
   return parsed.data;
 }
 
-export function openaiApiKey(): string {
-  return required("OPENAI_API_KEY", process.env.OPENAI_API_KEY);
+/** Motor de inferência: chat e transcrição. */
+export function groqApiKey(): string {
+  return required("GROQ_API_KEY", process.env.GROQ_API_KEY);
 }
 
 export function supabaseServiceRoleKey(): string {

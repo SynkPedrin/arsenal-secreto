@@ -1,26 +1,45 @@
 /**
- * Modelos e limites. Único lugar a mexer para trocar de motor.
+ * Motor de inferência: Groq.
  *
- * A conta tem acesso à família gpt-5.x, bem mais capaz que gpt-4.1.
- * O briefing fixou gpt-4.1, então é o padrão — mas basta alterar
- * ARSENAL_MODEL aqui (ou via env) para promover.
+ * A API é compatível com a da OpenAI, então o SDK continua o mesmo — muda a
+ * baseURL e a chave. O que a Groq NÃO tem está documentado abaixo, porque a
+ * ausência importa mais que a presença na hora de planejar as próximas fases.
  */
 export const MODELS = {
-  /** Geração da resposta final. */
-  main: process.env.ARSENAL_MODEL ?? "gpt-4.1",
+  /** Resposta final. Melhor aderência à persona longa entre os disponíveis. */
+  main: process.env.ARSENAL_MODEL ?? "openai/gpt-oss-120b",
   /** Tarefas leves: reescrita de query, reranking, títulos. */
-  light: process.env.ARSENAL_MODEL_LIGHT ?? "gpt-4o-mini",
-  /** Embeddings do vault. */
-  embedding: "text-embedding-3-large",
-  /** Voz → texto. Cai para whisper-1 se a conta não tiver acesso. */
-  transcription: process.env.ARSENAL_MODEL_STT ?? "gpt-4o-mini-transcribe",
-  /** Texto → voz. */
-  tts: process.env.ARSENAL_MODEL_TTS ?? "gpt-4o-mini-tts",
+  light: process.env.ARSENAL_MODEL_LIGHT ?? "llama-3.1-8b-instant",
+  /** Voz → texto. Acerta português sem ajuste. */
+  transcription: process.env.ARSENAL_MODEL_STT ?? "whisper-large-v3-turbo",
 } as const;
 
-/** Voz da IA na resposta falada. */
-export const TTS_VOICE = "onyx";
+/**
+ * Esforço de raciocínio dos modelos gpt-oss.
+ *
+ * Eles emitem tokens de raciocínio antes do conteúdo. No chat isso atrasaria
+ * o primeiro token, então fica em "low"; no debriefing e no diagnóstico, onde
+ * a qualidade do julgamento importa mais que a latência, sobe.
+ */
+export const REASONING = {
+  chat: "low",
+  judgment: "medium",
+} as const;
 
+/**
+ * A Groq não oferece embeddings — nenhum modelo do catálogo gera vetores.
+ * Quando a F1 (ingestão do vault) for construída, o embedding vai precisar
+ * de outra origem. As opções, em ordem de preferência:
+ *
+ *   1. Local via transformers.js (`Xenova/multilingual-e5-small`) — grátis,
+ *      roda no script de sync, bom em PT-BR, 384 dims.
+ *   2. Um provedor dedicado (Voyage, Cohere) — melhor qualidade, custo baixo.
+ *   3. OpenAI `text-embedding-3-large` — o plano original, exige conta com saldo.
+ *
+ * A coluna `embedding` no banco é vector(1536); trocar de origem exige
+ * ajustar a dimensão na migration antes de indexar.
+ */
+export const EMBEDDING_PROVIDER = "pendente" as const;
 export const EMBEDDING_DIMENSIONS = 1536;
 
 export const GENERATION = {

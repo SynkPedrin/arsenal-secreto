@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { GENERATION, MODELS } from "@/lib/ai/config";
+import { GENERATION, MODELS, REASONING } from "@/lib/ai/config";
 import { humanizeError } from "@/lib/ai/errors";
-import { openai } from "@/lib/ai/openai";
+import { llm } from "@/lib/ai/llm";
 import { buildSystemPrompt } from "@/lib/ai/persona";
 import { encodeEvent } from "@/lib/chat/protocol";
 
@@ -75,11 +75,14 @@ export async function POST(request: Request) {
 
         const system = buildSystemPrompt({ sources: [], profile, training });
 
-        const completion = await openai().chat.completions.create({
+        const completion = await llm().chat.completions.create({
           model: MODELS.main,
           // Sparring precisa de mais improviso que consultoria.
           temperature: training ? 0.75 : GENERATION.temperature,
           max_tokens: GENERATION.maxOutputTokens,
+          // O modelo raciocina antes de responder; no chat isso é latência
+          // pura, então fica no mínimo. Ver REASONING em ai/config.
+          reasoning_effort: REASONING.chat,
           stream: true,
           stream_options: { include_usage: true },
           messages: [{ role: "system", content: system }, ...history],

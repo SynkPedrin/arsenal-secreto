@@ -175,25 +175,29 @@ export default function ConfigPage() {
 
       <section className="panel animate-rise p-6 md:p-8">
         <h2 className="text-display mb-6 text-lg text-ink">Motor</h2>
+        <p className="text-meta mb-5">Groq · api.groq.com</p>
+
         <dl className="space-y-3 font-mono text-xs">
           {[
             ["Resposta", MODELS.main],
             ["Tarefas leves", MODELS.light],
             ["Transcrição", MODELS.transcription],
-            ["Voz", MODELS.tts],
-            ["Embeddings", MODELS.embedding],
+            ["Voz", "síntese do navegador (pt-BR)"],
+            ["Embeddings", "pendente — a Groq não oferece"],
           ].map(([label, model]) => (
             <div key={label} className="flex justify-between gap-4">
-              <dt className="text-muted">{label}</dt>
-              <dd className="text-gold-soft">{model}</dd>
+              <dt className="shrink-0 text-muted">{label}</dt>
+              <dd className="truncate text-right text-gold-soft">{model}</dd>
             </div>
           ))}
         </dl>
+
         <p className="mt-5 text-xs leading-relaxed text-muted">
           Trocar de modelo é uma linha em{" "}
           <code className="text-gold-soft">src/lib/ai/config.ts</code> ou a variável{" "}
-          <code className="text-gold-soft">ARSENAL_MODEL</code>. Temperatura e budget do contexto
-          RAG entram aqui quando a F2 ligar o cérebro.
+          <code className="text-gold-soft">ARSENAL_MODEL</code>. A fala usa a voz pt-BR do
+          sistema, porque o TTS da Groq só existe em inglês. Embeddings vão precisar de outra
+          origem quando a F1 indexar o vault.
         </p>
       </section>
     </div>

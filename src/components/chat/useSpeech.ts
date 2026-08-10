@@ -1,133 +1,152 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createLevelSource, type LevelSource } from "@/lib/audio/levelStore";
 
 /**
- * Fala da IA. Passa o áudio por um AnalyserNode antes da saída, para a esfera
- * pulsar no ritmo da voz — o mesmo canal usado na captura, agora invertido.
+ * Fala da IA pela síntese do próprio navegador.
+ *
+ * A Groq só oferece TTS em inglês (orpheus), e a resposta é em português —
+ * então a voz vem do sistema, que tem vozes pt-BR nativas, funciona offline
+ * e não custa nada. A contrapartida: `speechSynthesis` não expõe o áudio,
+ * então não dá para ligar um AnalyserNode nele. A amplitude que alimenta a
+ * esfera é derivada dos eventos de fronteira de palavra — cada palavra dita
+ * dá um pico que decai. Não é o envelope real, mas acompanha o ritmo da fala.
  */
-export function useSpeech(speed = 1.05) {
-  const [isSpeaking, setSpeaking] = useState(false);
 
+const PULSE_DECAY_PER_SECOND = 2.6;
+
+/** Tira a marcação para a voz não ler asterisco e cerquilha. */
+function toSpeech(markdown: string): string {
+  return markdown
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/!?\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g, "$1")
+    .replace(/!?\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/^\s*[-*+]\s+/gm, "")
+    .replace(/^\s*>\s?/gm, "")
+    .replace(/(\*\*|__|\*|_|~~)/g, "")
+    .replace(/^[-—·•]\s*/gm, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+function detectSupport(): boolean {
+  return typeof window !== "undefined" && "speechSynthesis" in window;
+}
+
+const neverChanges = () => () => {};
+const noSupportOnServer = () => false;
+
+/** Melhor voz pt-BR disponível; cai para qualquer português. */
+function pickVoice(): SpeechSynthesisVoice | null {
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length === 0) return null;
+
+  return (
+    voices.find((v) => v.lang === "pt-BR" && !v.localService) ??
+    voices.find((v) => v.lang === "pt-BR") ??
+    voices.find((v) => v.lang.startsWith("pt")) ??
+    null
+  );
+}
+
+export function useSpeech(speed = 1.05) {
+  const supported = useSyncExternalStore(neverChanges, detectSupport, noSupportOnServer);
+  const [isSpeaking, setSpeaking] = useState(false);
   const [level] = useState<LevelSource>(createLevelSource);
 
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const contextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
   const rafRef = useRef(0);
-  const urlRef = useRef<string | null>(null);
+  const pulseRef = useRef(0);
   const speedRef = useRef(speed);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
     speedRef.current = speed;
   }, [speed]);
 
-  const cleanupAudio = useCallback(() => {
+  const stopMeter = useCallback(() => {
     cancelAnimationFrame(rafRef.current);
     rafRef.current = 0;
-
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.src = "";
-      audioRef.current = null;
-    }
-    if (urlRef.current) {
-      URL.revokeObjectURL(urlRef.current);
-      urlRef.current = null;
-    }
+    pulseRef.current = 0;
     level.set(0);
     level.setBands(new Uint8Array(0));
   }, [level]);
 
   const stop = useCallback(() => {
-    cleanupAudio();
+    if (supported) window.speechSynthesis.cancel();
+    utteranceRef.current = null;
+    stopMeter();
     setSpeaking(false);
-  }, [cleanupAudio]);
+  }, [supported, stopMeter]);
 
-  useEffect(
-    () => () => {
-      cleanupAudio();
-      void contextRef.current?.close().catch(() => {});
-      contextRef.current = null;
-    },
-    [cleanupAudio],
-  );
+  // Nenhuma fala sobrevive à saída da tela.
+  useEffect(() => stop, [stop]);
 
   const speak = useCallback(
     async (text: string) => {
-      const clean = text.trim();
+      if (!supported) return;
+
+      const clean = toSpeech(text);
       if (!clean) return;
 
-      stop();
+      window.speechSynthesis.cancel();
 
-      let blob: Blob;
-      try {
-        const response = await fetch("/api/tts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: clean.slice(0, 4000), speed: speedRef.current }),
-        });
-        if (!response.ok) return;
-        blob = await response.blob();
-      } catch {
-        return;
-      }
+      const utterance = new SpeechSynthesisUtterance(clean);
+      utterance.lang = "pt-BR";
+      utterance.rate = speedRef.current;
+      utterance.pitch = 0.95;
 
-      const url = URL.createObjectURL(blob);
-      urlRef.current = url;
+      const voice = pickVoice();
+      if (voice) utterance.voice = voice;
 
-      const audio = new Audio(url);
-      audio.crossOrigin = "anonymous";
-      audioRef.current = audio;
+      // Envelope sintético: pico a cada palavra, decaimento contínuo.
+      let last = performance.now();
+      const bands = new Uint8Array(28);
 
-      // Um AudioContext por hook: recriar a cada fala estoura o limite do browser.
-      contextRef.current ??= new AudioContext();
-      const context = contextRef.current;
-      if (context.state === "suspended") await context.resume().catch(() => {});
+      const meter = (now: number) => {
+        const dt = Math.min((now - last) / 1000, 0.05);
+        last = now;
 
-      analyserRef.current ??= context.createAnalyser();
-      const analyser = analyserRef.current;
-      analyser.fftSize = 256;
-      analyser.smoothingTimeConstant = 0.75;
+        pulseRef.current = Math.max(0, pulseRef.current - dt * PULSE_DECAY_PER_SECOND);
+        const wobble = 0.12 + Math.sin(now / 90) * 0.04;
+        const value = Math.min(1, pulseRef.current + wobble);
 
-      try {
-        const source = context.createMediaElementSource(audio);
-        source.connect(analyser);
-        analyser.connect(context.destination);
-      } catch {
-        // Fallback: sem análise, mas o áudio ainda toca.
-      }
+        level.set(value);
+        for (let i = 0; i < bands.length; i += 1) {
+          const shape = Math.sin((i / bands.length) * Math.PI);
+          bands[i] = Math.round(value * 255 * (0.4 + shape * 0.6));
+        }
+        level.setBands(bands);
 
-      const spectrum = new Uint8Array(analyser.frequencyBinCount);
-      let smoothed = 0;
-
-      const measure = () => {
-        analyser.getByteFrequencyData(spectrum);
-        let sum = 0;
-        for (const value of spectrum) sum += value * value;
-        const rms = Math.sqrt(sum / spectrum.length) / 255;
-
-        smoothed += (Math.min(1, rms * 2.4) - smoothed) * 0.15;
-        level.set(smoothed);
-        level.setBands(spectrum.slice(0, 28));
-
-        rafRef.current = requestAnimationFrame(measure);
+        rafRef.current = requestAnimationFrame(meter);
       };
 
-      audio.onended = stop;
-      audio.onerror = stop;
-
-      try {
-        await audio.play();
+      utterance.onboundary = () => {
+        pulseRef.current = 0.85;
+      };
+      utterance.onstart = () => {
         setSpeaking(true);
-        rafRef.current = requestAnimationFrame(measure);
-      } catch {
-        stop();
-      }
+        last = performance.now();
+        rafRef.current = requestAnimationFrame(meter);
+      };
+      utterance.onend = () => {
+        utteranceRef.current = null;
+        stopMeter();
+        setSpeaking(false);
+      };
+      utterance.onerror = () => {
+        utteranceRef.current = null;
+        stopMeter();
+        setSpeaking(false);
+      };
+
+      utteranceRef.current = utterance;
+      window.speechSynthesis.speak(utterance);
     },
-    [level, stop],
+    [supported, level, stopMeter],
   );
 
-  return { speak, stop, isSpeaking, level };
+  return { speak, stop, isSpeaking, level, supported };
 }

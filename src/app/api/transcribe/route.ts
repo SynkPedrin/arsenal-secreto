@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { MODELS } from "@/lib/ai/config";
 import { humanizeError } from "@/lib/ai/errors";
-import { openai } from "@/lib/ai/openai";
+import { llm } from "@/lib/ai/llm";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
   const startedAt = Date.now();
 
   try {
-    const transcription = await openai().audio.transcriptions.create({
+    const transcription = await llm().audio.transcriptions.create({
       file,
       model: MODELS.transcription,
       language: "pt",
@@ -50,11 +50,11 @@ export async function POST(request: Request) {
       duration_ms: Date.now() - startedAt,
     });
   } catch (error) {
-    // Contas sem acesso ao modelo novo caem no whisper-1.
+    // O turbo é mais rápido; o large completo é mais tolerante a áudio ruim.
     try {
-      const fallback = await openai().audio.transcriptions.create({
+      const fallback = await llm().audio.transcriptions.create({
         file,
-        model: "whisper-1",
+        model: "whisper-large-v3",
         language: "pt",
       });
 

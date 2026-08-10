@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { MODELS } from "@/lib/ai/config";
+import { MODELS, REASONING } from "@/lib/ai/config";
 import { humanizeError } from "@/lib/ai/errors";
-import { openai } from "@/lib/ai/openai";
+import { llm } from "@/lib/ai/llm";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -80,9 +80,11 @@ export async function POST(request: Request) {
     .join("\n\n");
 
   try {
-    const completion = await openai().chat.completions.create({
+    const completion = await llm().chat.completions.create({
       model: MODELS.main,
       temperature: 0.3,
+      // Encontrar padrão entre sessões exige comparar; vale o raciocínio.
+      reasoning_effort: REASONING.judgment,
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: SYSTEM },
