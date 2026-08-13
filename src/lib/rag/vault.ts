@@ -1,4 +1,9 @@
-import "server-only";
+/**
+ * Sem "server-only" de propósito: este módulo não toca segredo nenhum, só lê
+ * arquivo. O import de node:fs já impede o uso no cliente, e a ausência do
+ * guard permite que a CLI de auditoria (scripts/sync-vault.mts) reaproveite
+ * exatamente o mesmo indexador que o servidor usa — uma fonte de verdade só.
+ */
 import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import matter from "gray-matter";

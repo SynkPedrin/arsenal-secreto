@@ -1,9 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { greeting } from "@/lib/ai/persona";
 import { profilePayload, useSettings } from "@/lib/settings";
+import { getConversation, saveConversation } from "@/lib/chat/store";
 import { AtomCore } from "@/components/sphere/AtomCore";
 import { MiniWaveform } from "@/components/sphere/MiniWaveform";
 import { ParticleSphere, StateCaption } from "@/components/sphere/ParticleSphere";
@@ -24,18 +26,42 @@ const SUGGESTIONS = [
 
 export function ChatView() {
   const [settings, setSettings] = useSettings();
+  const params = useSearchParams();
+
+  // Id da conversa: o da URL quando se retoma o histórico, senão um novo.
+  // Derivado em vez de estado — assim nenhum efeito precisa setá-lo.
+  const [freshId, setFreshId] = useState(() => crypto.randomUUID());
+  const conversationId = params.get("c") ?? freshId;
   const [draft, setDraft] = useState("");
   const [autoSendArmed, setArmed] = useState(false);
   const autoSendRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const speech = useSpeech(settings.voiceSpeed);
 
-  const { messages, state, busy, pulse, send, stop, reset } = useChat({
+  const { messages, state, busy, pulse, send, stop, reset, load } = useChat({
     profile: profilePayload(settings),
     onReply: (text) => {
       if (settings.speakReplies) void speech.speak(text);
     },
   });
+
+  // Retoma a conversa apontada pela URL (?c=), vinda da tela de histórico.
+  const resumed = useRef<string | null>(null);
+  useEffect(() => {
+    const id = params.get("c");
+    if (!id || resumed.current === id) return;
+
+    const stored = getConversation(id);
+    if (!stored) return;
+    resumed.current = id;
+    load(stored.messages);
+  }, [params, load]);
+
+  // Grava ao fim de cada resposta — salvar por token seria escrita a 60fps.
+  useEffect(() => {
+    if (state !== "idle" || messages.length === 0) return;
+    saveConversation(conversationId, messages);
+  }, [state, messages, conversationId]);
 
   const cancelAutoSend = useCallback(() => {
     if (autoSendRef.current) clearTimeout(autoSendRef.current);
@@ -193,6 +219,9 @@ export function ChatView() {
           onClick={() => {
             speech.stop();
             reset();
+            resumed.current = null;
+            setFreshId(crypto.randomUUID());
+            window.history.replaceState(null, "", "/");
           }}
           className="flex items-center gap-2 rounded-full border border-hairline px-3 py-1.5 text-xs text-muted transition-all duration-200 hover:border-hairline-strong hover:text-gold-soft"
         >

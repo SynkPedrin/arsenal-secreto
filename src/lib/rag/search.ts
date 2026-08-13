@@ -1,4 +1,7 @@
-import "server-only";
+/**
+ * Sem "server-only": só depende do leitor do vault, que também não tem
+ * segredo. Ver a nota em vault.ts.
+ */
 import type { RagSource } from "@/lib/supabase/database.types";
 import { readVault, type VaultChunk } from "./vault";
 

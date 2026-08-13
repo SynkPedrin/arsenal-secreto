@@ -50,6 +50,17 @@ export function useChat({ profile, training, onReply }: ChatOptions = {}) {
     setState("idle");
   }, []);
 
+  /** Semeia o histórico ao retomar uma conversa do histórico. */
+  const load = useCallback(
+    (previous: ChatMessage[]) => {
+      abortRef.current?.abort();
+      abortRef.current = null;
+      apply(() => previous);
+      setState("idle");
+    },
+    [apply],
+  );
+
   const reset = useCallback(() => {
     abortRef.current?.abort();
     abortRef.current = null;
@@ -180,5 +191,5 @@ export function useChat({ profile, training, onReply }: ChatOptions = {}) {
     [apply],
   );
 
-  return { messages, state, busy, pulse, send, stop, reset };
+  return { messages, state, busy, pulse, send, stop, reset, load };
 }

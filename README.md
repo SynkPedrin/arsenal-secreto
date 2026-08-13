@@ -64,9 +64,12 @@ A migration cria as tabelas, os índices (HNSW para cosseno, GIN para o full-tex
 | `npm run build` | Build de produção |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
-| `npm run sync -- --full` | Reindexa o vault inteiro *(F1)* |
-| `npm run sync -- --watch` | Sync incremental contínuo *(F1)* |
-| `npm run capture-preview` | Screenshot de fallback do Arsenal Secreto *(F5)* |
+| `npm test` | Vitest — 28 testes sobre RAG, protocolo SSE e system prompt |
+| `npm run test:watch` | Vitest em modo observador |
+| `npm run sync` | Auditoria do cérebro: o que a IA enxerga e o que ficou de fora |
+| `npm run sync -- --full` | Idem, listando nota por nota |
+| `npm run sync -- --watch` | Reindexa a cada alteração no vault |
+| `npm run capture-preview` | Screenshot de fallback do cofre (exige Playwright, opcional) |
 
 ## Estrutura
 
@@ -223,6 +226,26 @@ aprovação não ressuscita acesso já reembolsado.
 
 O conteúdo do curso vive em [`src/lib/commerce/catalog.ts`](src/lib/commerce/catalog.ts) —
 o banco guarda só o que é transacional.
+
+## Testes
+
+```bash
+npm test
+```
+
+28 testes em Vitest, todos sobre lógica pura — sem mock de rede:
+
+- **`src/lib/rag/vault.test.ts`** monta um vault temporário em disco e prova o
+  que mais importa: rascunho, transcrição crua e template **nunca** são
+  recuperados. É a regra anti-alucinação verificada na camada do dado, não só
+  no prompt. Cobre também chunking por heading, extração de wikilink, expansão
+  pelo grafo, normalização de acento e o caso "vault não cobre" que dispara a R1.
+- **`src/lib/ai/persona.test.ts`** garante que os dois estados do prompt são
+  mutuamente exclusivos: com fontes ele manda citar, sem fontes ele proíbe citar
+  qualquer call. Também cobre o bloco de roleplay e o schema do debriefing.
+- **`src/lib/chat/protocol.test.ts`** quebra o stream SSE em pedaços de 7 bytes
+  para provar que evento partido no meio é remontado, e que frame corrompido não
+  derruba o resto.
 
 ## Segurança
 

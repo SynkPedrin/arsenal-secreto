@@ -8,8 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "sync": "tsx --env-file=.env.local scripts/sync-vault.ts",
-    "capture-preview": "tsx --env-file=.env.local scripts/capture-preview.ts"
+    "sync": "tsx --env-file=.env.local scripts/sync-vault.mts",
+    "capture-preview": "tsx --env-file=.env.local scripts/capture-preview.mts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.4",
@@ -32,12 +34,14 @@
     "@types/node": "^20.19.43",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.1.10",
     "chokidar": "^5.0.0",
     "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.11",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }
