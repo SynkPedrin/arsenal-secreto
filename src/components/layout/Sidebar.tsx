@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "@/lib/nav";
 
 function isActive(pathname: string, href: string): boolean {
-  return href === "/" ? pathname === "/" : pathname.startsWith(href);
+  return pathname === href || pathname.startsWith(`${href}/`);
 }
 
 /**
@@ -28,7 +28,7 @@ export function Sidebar({ initials }: { initials: string }) {
       />
 
       <Link
-        href="/"
+        href="/ia"
         aria-label="Arsenal — início"
         className="group/logo mb-6 hidden shrink-0 md:block"
       >

@@ -80,9 +80,9 @@ arsenal-app/
 ├── src/
 │   ├── app/                     # rotas (App Router)
 │   │   ├── layout.tsx           # raiz: fontes e tema
+│   │   ├── page.tsx             # landing full-bleed, sem barra
 │   │   ├── (app)/               # produto: com barra lateral
-│   │   │   └── page.tsx         # Home / IA
-│   │   ├── lp/                  # landing full-bleed, sem barra
+│   │   │   └── ia/              # o chat
 │   │   ├── analytics/           # leitura dos treinos e calls
 │   │   ├── treinamento/         # sparring
 │   │   ├── arsenal-secreto/     # prévia do cofre
@@ -239,7 +239,8 @@ o banco guarda só o que é transacional.
 
 ## Landing page e Remotion
 
-`/lp` é a landing do **Closer's IA**, com a linguagem da Raycast — navbar
+`/` é a landing do **Closer's IA** — é a primeira coisa que o visitante vê. O
+produto vive atrás dela, a partir de `/ia`, com a linguagem da Raycast — navbar
 flutuante em pílula, headline gigante com tracking negativo, coluna central
 estreita — sobre a identidade platina do produto.
 

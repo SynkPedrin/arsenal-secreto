@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Archivo, IBM_Plex_Mono } from "next/font/google";
+import { Archivo, IBM_Plex_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
 /** Corpo: Archivo em peso variável. */
@@ -14,6 +14,19 @@ const archivoDisplay = Archivo({
   variable: "--font-archivo-display",
   subsets: ["latin"],
   axes: ["wdth"],
+  display: "swap",
+});
+
+/**
+ * Serif de alto contraste, só para a palavra que gira na landing.
+ * Ecoa o monograma DW, que também é serifado — o contraste com o Archivo é o
+ * que faz a troca de palavra ser percebida como ênfase, e não como glitch.
+ */
+const instrument = Instrument_Serif({
+  variable: "--font-serif",
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
   display: "swap",
 });
 
@@ -45,7 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="pt-BR"
-      className={`${archivo.variable} ${archivoDisplay.variable} ${plexMono.variable} h-full antialiased`}
+      className={`${archivo.variable} ${archivoDisplay.variable} ${instrument.variable} ${plexMono.variable} h-full antialiased`}
     >
       <body className="min-h-full">{children}</body>
     </html>

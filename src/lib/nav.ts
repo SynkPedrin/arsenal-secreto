@@ -11,7 +11,7 @@ import type { LucideIcon } from "lucide-react";
 
 export type NavItem = {
   href:
-    | "/"
+    | "/ia"
     | "/treinamento"
     | "/analytics"
     | "/curso"
@@ -24,7 +24,7 @@ export type NavItem = {
 };
 
 export const NAV_ITEMS: readonly NavItem[] = [
-  { href: "/", label: "IA", hint: "Conversar com a IA Arsenal", icon: Brain },
+  { href: "/ia", label: "IA", hint: "Conversar com a IA Arsenal", icon: Brain },
   { href: "/treinamento", label: "Treinamento", hint: "Sparring com cliente real", icon: Target },
   {
     href: "/analytics",

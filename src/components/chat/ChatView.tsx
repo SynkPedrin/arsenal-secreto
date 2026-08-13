@@ -221,7 +221,7 @@ export function ChatView() {
             reset();
             resumed.current = null;
             setFreshId(crypto.randomUUID());
-            window.history.replaceState(null, "", "/");
+            window.history.replaceState(null, "", "/ia");
           }}
           className="flex items-center gap-2 rounded-full border border-hairline px-3 py-1.5 text-xs text-muted transition-all duration-200 hover:border-hairline-strong hover:text-gold-soft"
         >

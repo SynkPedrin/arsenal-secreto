@@ -75,7 +75,7 @@ export default function ConversasPage() {
             </p>
           </div>
           <Link
-            href="/"
+            href="/ia"
             className="text-display rounded-full bg-gold/12 px-7 py-3 text-xs tracking-[0.16em] text-gold uppercase transition-all duration-200 hover:bg-gold/20 hover:shadow-glow-sm"
           >
             Começar
@@ -94,7 +94,7 @@ export default function ConversasPage() {
             return (
               <li key={conversa.id} className="group relative">
                 <Link
-                  href={`/?c=${conversa.id}`}
+                  href={`/ia?c=${conversa.id}`}
                   className="panel block p-4 transition-all duration-200 hover:border-hairline-strong md:p-5"
                 >
                   <p className="pr-10 text-sm text-ink">{conversa.title}</p>

@@ -2,12 +2,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Brain, Mic, Target } from "lucide-react";
 import { HeroPlayer } from "@/components/lp/HeroPlayer";
+import { RotatingWord } from "@/components/lp/RotatingWord";
 
 export const metadata = {
   title: "Closer's IA — treine a call antes de vivê-la",
   description:
     "A IA treinada no método de David William. Ela vira o seu lead, te pressiona com objeção real e disseca onde a venda foi perdida.",
+  alternates: { canonical: "/" },
 };
+
+/** O que o closer treina aqui — gira dentro do título. */
+const TREINOS = ["a objeção", "o silêncio", "a pressão", "o não", "o fechamento"] as const;
 
 const NAV = [
   { label: "Método", href: "#metodo" },
@@ -44,7 +49,7 @@ export default function LandingPage() {
       {/* ── Navbar flutuante ─────────────────────────────────── */}
       <header className="fixed inset-x-0 top-4 z-50 px-4">
         <nav className="mx-auto flex max-w-5xl items-center gap-6 rounded-2xl border border-hairline bg-[oklch(14%_0.005_60_/_0.72)] px-4 py-2.5 shadow-[inset_0_1px_0_0_oklch(100%_0_0_/_0.05)] backdrop-blur-xl">
-          <Link href="/lp" className="flex shrink-0 items-center gap-2.5">
+          <Link href="/" className="flex shrink-0 items-center gap-2.5">
             <Image src="/logo-dw.png" alt="" width={30} height={30} className="size-[30px]" />
             <span className="text-display text-sm text-ink">Closer&apos;s IA</span>
           </Link>
@@ -62,7 +67,7 @@ export default function LandingPage() {
           </div>
 
           <Link
-            href="/"
+            href="/ia"
             className="ml-auto shrink-0 rounded-xl bg-gold-soft px-4 py-2 text-sm font-medium text-void transition-opacity duration-200 hover:opacity-88"
           >
             Abrir o Arsenal
@@ -83,10 +88,17 @@ export default function LandingPage() {
           <ArrowRight size={13} className="text-muted" aria-hidden />
         </a>
 
-        <h1 className="text-display animate-rise mx-auto max-w-4xl text-[clamp(2.75rem,7.5vw,5.25rem)] leading-[0.95] tracking-[-0.04em] text-ink">
-          Treine a call
-          <br />
-          antes de vivê-la.
+        <h1 className="text-display animate-rise mx-auto max-w-4xl text-[clamp(2.5rem,7vw,5rem)] leading-[1.02] tracking-[-0.04em] text-ink">
+          {/* A frase inteira, uma vez, para leitor de tela e para busca. */}
+          <span className="sr-only">
+            Treine a objeção, o silêncio, a pressão, o não e o fechamento antes da call.
+          </span>
+
+          <span aria-hidden className="block">
+            Treine <RotatingWord words={TREINOS} />
+            <br />
+            antes da call.
+          </span>
         </h1>
 
         <p className="animate-rise mx-auto mt-7 max-w-lg text-[17px] leading-relaxed text-muted">
@@ -102,7 +114,7 @@ export default function LandingPage() {
             Começar um sparring
           </Link>
           <Link
-            href="/"
+            href="/ia"
             className="w-full rounded-xl border border-hairline bg-panel/60 px-6 py-3 text-sm text-ink transition-colors duration-200 hover:border-hairline-strong sm:w-auto"
           >
             Conversar com a IA

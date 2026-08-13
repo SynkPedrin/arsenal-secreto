@@ -57,6 +57,7 @@
   --font-display: var(--font-archivo-display), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+  --font-serif: var(--font-serif), ui-serif, Georgia, serif;
 
   --shadow-glow-sm: 0 0 12px var(--gold-glow);
   --shadow-glow-md: 0 0 28px var(--gold-glow);
