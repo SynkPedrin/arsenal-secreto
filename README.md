@@ -97,7 +97,9 @@ arsenal-app/
 └── supabase/migrations/
 ```
 
-O vault fica **fora** do projeto, em `../arsenal secreto/`, e é apontado por `OBSIDIAN_VAULT_PATH`.
+O cérebro fica em [`cerebro/`](cerebro/) — é um vault do Obsidian versionado junto
+com o código, apontado por `OBSIDIAN_VAULT_PATH=./cerebro`. Abra essa pasta como
+vault no Obsidian para editar as notas.
 
 ## Fases
 
@@ -178,12 +180,13 @@ O prompt tem dois estados. **Com fontes recuperadas**, ele cita a nota de origem
 **Sem fontes**, ele proíbe citar qualquer call, número ou frase do David e obriga
 a marcar a resposta como princípio geral — é a R1/R7 aplicada por construção.
 
-O cérebro está **preenchido**: `00-Cerebro/` tem os três documentos destilados de
-**8 calls reais** do David (74 a 152 min cada) — persona e bordões, as 3 etapas do
-método com as 7 fontes de aquisição, e 8 objeções com script verbatim.
+O cérebro está **preenchido**: [`cerebro/🧠 Arsenal-Brain/00-Cerebro/`](cerebro/) tem
+os três documentos destilados de **8 calls reais** (74 a 152 min cada) — persona e
+bordões, as 3 etapas do método com as 7 fontes de aquisição, e 8 objeções com
+script verbatim.
 
-`08-Fonte-Bruta/` guarda as transcrições originais e fica **fora do índice**: a IA
-cita conhecimento destilado, não duas horas de call literal nem gabarito com campos
+`08-Fonte-Bruta/` guarda as transcrições e fica **fora do índice**: a IA cita
+conhecimento destilado, não duas horas de call literal nem gabarito com campos
 `[EXTRAIR]`. Use a pasta para auditar a origem de qualquer frase.
 
 ## Esteira de compra (Hotmart)
@@ -246,6 +249,30 @@ npm test
 - **`src/lib/chat/protocol.test.ts`** quebra o stream SSE em pedaços de 7 bytes
   para provar que evento partido no meio é remontado, e que frame corrompido não
   derruba o resto.
+
+## Privacidade do acervo
+
+As 8 calls são reais. Antes de o repositório ir a público, todo o acervo passou por
+**de-identificação**, não por troca cosmética de nome — numa cidade de 25 mil
+habitantes, "a pediatra que abriu consultório este ano" é uma pessoa só, com ou sem
+o primeiro nome.
+
+Foram substituídos, de forma consistente em todos os arquivos:
+
+- nome e sobrenome dos 8 clientes, e o apelido usado no meio da fala;
+- terceiros citados dentro das calls (outro médico, a secretária, a sócia);
+- cidade, hospital, clínica e operadora de saúde;
+- **um e-mail pessoal ditado em voz alta** e **um telefone falado dígito a dígito** —
+  os dois escapariam de qualquer regex de nome, e são o motivo de a auditoria ter
+  procurado padrão de PII e não só palavra.
+
+O que permanece: David William e a Destino Ads, que são o autor do método e a marca
+do projeto, e os valores comerciais, que são dele.
+
+O script de auditoria usado está no histórico do commit que fez a troca. Mesmo
+assim, uma call verbatim de duas horas descreve rotina, família e finanças de uma
+pessoa real — quem conviva com ela pode reconhecê-la pelo contexto. Se o acervo for
+usado fora deste TCC, o certo é ter consentimento dos participantes.
 
 ## Segurança
 

@@ -45,3 +45,8 @@ next-env.d.ts
 
 # previews gerados no build
 /public/previews/*.png
+
+# Obsidian: estado de janela e cache não são conteúdo do cérebro
+cerebro/.obsidian/workspace*
+cerebro/.obsidian/cache
+cerebro/.trash/
