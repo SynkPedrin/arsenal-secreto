@@ -1,7 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Archivo, IBM_Plex_Mono } from "next/font/google";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { StatusPill } from "@/components/layout/StatusPill";
 import "./globals.css";
 
 /** Corpo: Archivo em peso variável. */
@@ -29,32 +27,27 @@ const plexMono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: "Arsenal",
-  description: "Motor de pensamento sobre o seu cofre do Obsidian.",
+  description: "Motor de pensamento sobre o método de David William.",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#050505",
+  themeColor: "#060606",
 };
 
+/**
+ * Raiz: só fontes, tema e a casca do documento.
+ *
+ * A navegação do app mora em (app)/layout.tsx. Assim a landing em /lp fica
+ * full-bleed, sem barra lateral e sem o recuo do conteúdo — duas camadas
+ * diferentes do produto, cada uma com a sua moldura.
+ */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="pt-BR"
       className={`${archivo.variable} ${archivoDisplay.variable} ${plexMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full">
-        <div className="ambient" aria-hidden />
-
-        <Sidebar initials="PE" />
-
-        <div className="fixed top-5 right-5 z-30">
-          <StatusPill status="online" />
-        </div>
-
-        <main className="relative z-10 min-h-dvh pb-16 md:pb-0 md:pl-[var(--rail-w)]">
-          {children}
-        </main>
-      </body>
+      <body className="min-h-full">{children}</body>
     </html>
   );
 }

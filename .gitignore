@@ -50,3 +50,6 @@ next-env.d.ts
 cerebro/.obsidian/workspace*
 cerebro/.obsidian/cache
 cerebro/.trash/
+
+# Remotion: saída de render
+/out/

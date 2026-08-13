@@ -70,6 +70,8 @@ A migration cria as tabelas, os índices (HNSW para cosseno, GIN para o full-tex
 | `npm run sync -- --full` | Idem, listando nota por nota |
 | `npm run sync -- --watch` | Reindexa a cada alteração no vault |
 | `npm run capture-preview` | Screenshot de fallback do cofre (exige Playwright, opcional) |
+| `npm run video:studio` | Remotion Studio para editar a composição do herói |
+| `npm run video:render` | Renderiza o criativo em `out/closers-ia.mp4` |
 
 ## Estrutura
 
@@ -77,13 +79,18 @@ A migration cria as tabelas, os índices (HNSW para cosseno, GIN para o full-tex
 arsenal-app/
 ├── src/
 │   ├── app/                     # rotas (App Router)
-│   │   ├── page.tsx             # Home / IA
+│   │   ├── layout.tsx           # raiz: fontes e tema
+│   │   ├── (app)/               # produto: com barra lateral
+│   │   │   └── page.tsx         # Home / IA
+│   │   ├── lp/                  # landing full-bleed, sem barra
 │   │   ├── analytics/           # leitura dos treinos e calls
 │   │   ├── treinamento/         # sparring
 │   │   ├── arsenal-secreto/     # prévia do cofre
 │   │   ├── conversas/           # histórico
 │   │   └── config/              # modelo, persona, RAG
+│   ├── remotion/                # composições de vídeo
 │   ├── components/
+│   │   ├── lp/                  # herói da landing (Player)
 │   │   ├── layout/              # Sidebar, StatusPill, PageShell
 │   │   ├── sphere/              # esfera de partículas (F4)
 │   │   └── ui/
@@ -229,6 +236,43 @@ aprovação não ressuscita acesso já reembolsado.
 
 O conteúdo do curso vive em [`src/lib/commerce/catalog.ts`](src/lib/commerce/catalog.ts) —
 o banco guarda só o que é transacional.
+
+## Landing page e Remotion
+
+`/lp` é a landing do **Closer's IA**, com a linguagem da Raycast — navbar
+flutuante em pílula, headline gigante com tracking negativo, coluna central
+estreita — sobre a identidade platina do produto.
+
+O herói não é vídeo gravado nem CSS: é uma composição **Remotion** rodando ao
+vivo via `@remotion/player`. O monograma DW é o núcleo e as cinco etapas do
+método orbitam como elétrons — a metáfora é o produto, não decoração.
+
+**A mesma composição produz duas saídas:**
+
+```bash
+npm run video:studio    # editar no Remotion Studio
+npm run video:render    # gerar out/closers-ia.mp4 para anúncio
+```
+
+Um só código-fonte em [`src/remotion/`](src/remotion/) alimenta o herói da
+página e o criativo de mídia paga. Mudou a marca, mudam os dois.
+
+Detalhes que custaram tempo e vale registrar:
+
+- O Player se posiciona **absoluto** dentro do contêiner. Sem `aspect-ratio` no
+  pai, ele colapsa e a cena some — `height: auto` não resolve.
+- Animação tem que ser dirigida por `useCurrentFrame()` + `interpolate()`.
+  `transition` de CSS não existe quando o Remotion renderiza quadro a quadro.
+- O `<Img>` do Remotion chama `decode()`, que é mais estrito que um `<img>`
+  comum. O PNG do monograma passava no navegador e falhava aqui.
+
+### ⚠️ Licença do Remotion
+
+O Remotion é gratuito para pessoas físicas e empresas pequenas, mas **exige
+licença paga para empresas acima de três pessoas**. Este projeto passa
+`acknowledgeRemotionLicense` ao Player. Se o Closer's IA virar produto comercial
+da Destino Ads, a licença precisa ser adquirida — ver
+[remotion.dev/license](https://remotion.dev/license).
 
 ## Testes
 
