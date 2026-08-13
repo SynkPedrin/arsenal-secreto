@@ -119,6 +119,12 @@ export default async function CursoPage() {
         <div className="mb-4 flex items-center gap-2">
           <ShieldCheck size={14} className="text-gold" aria-hidden />
           <span className="text-meta text-gold-soft">Acesso liberado</span>
+          {/* Selo explícito: master nunca deve ser confundido com compra. */}
+          {access.source === "master" ? (
+            <span className="rounded-full border border-amber-burnt/45 px-2 py-0.5 font-mono text-[10px] tracking-wider text-amber-burnt uppercase">
+              master · demo
+            </span>
+          ) : null}
         </div>
 
         <p className="text-meta mb-3">{product.tagline}</p>

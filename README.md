@@ -35,6 +35,7 @@ npm run dev                    # http://localhost:3100
 | `SUPABASE_SERVICE_ROLE_KEY` | **servidor/scripts apenas** | Ingestão (bypassa RLS) |
 | `OBSIDIAN_VAULT_PATH` | script local | Caminho absoluto do vault |
 | `ARSENAL_SECRETO_URL` | ambos | Site exibido na aba do cofre |
+| `ARSENAL_MASTER_KEY` | **servidor** | Destrava `/curso` sem compra (demo). Vazio = rota 404 |
 | `HOTMART_HOTTOK` | **servidor** | Token do postback da Hotmart |
 | `NEXT_PUBLIC_ARSENAL_HOTMART_PRODUCT_ID` | público | Casa o webhook com o slug do catálogo |
 | `NEXT_PUBLIC_ARSENAL_CHECKOUT_URL` | público | Link de checkout (vazio antes do lançamento) |
@@ -100,9 +101,9 @@ O vault fica **fora** do projeto, em `../arsenal secreto/`, e é apontado por `O
 | Fase | Escopo | Status |
 |---|---|---|
 | F0 | Fundação: Next + design system + shell + schema + RLS | ✅ |
-| F1 | Ingestão do vault (parser, chunking, hash, embeddings) | ⏳ |
-| F2 | RAG core (híbrido + RRF + grafo + reranking) | ⏳ |
-| F3 | Chat com streaming SSE e fontes citadas | ✅ sem RAG |
+| F1 | Ingestão do vault (parser, chunking, grafo) | ✅ local |
+| F2 | RAG core (BM25 + grafo; híbrido pende de embeddings) | ✅ parcial |
+| F3 | Chat com streaming SSE e fontes citadas | ✅ |
 | F4 | Esfera de partículas reativa | ✅ |
 | F5 | Arsenal Secreto ✅ · Analytics ✅ (substituiu a Base Central) | ✅ |
 | F6 | Polimento, responsivo, estados vazios | ⏳ |
@@ -143,17 +144,41 @@ Os modelos `gpt-oss` emitem tokens de raciocínio antes do conteúdo. No chat is
 diagnóstico do Analytics, onde julgar bem vale mais que responder rápido, sobe
 para `medium`.
 
+## O cérebro (RAG)
+
+A IA lê o vault do Obsidian **direto do disco**, sem banco e sem embeddings:
+`readVault()` varre `OBSIDIAN_VAULT_PATH`, separa frontmatter, extrai wikilinks e
+tags, quebra por headings H1–H3 e cacheia por mtime. A busca é BM25 com boost de
+título/heading, mais **expansão de 1 salto pelo grafo de wikilinks** — é isso que
+traz a call junto da técnica.
+
+Foi a escolha certa para agora: o Supabase ainda não tem chaves e a Groq não gera
+vetores, mas o vault são arquivos locais e o acervo é pequeno. Quando o pgvector
+entrar, `src/lib/rag/vault.ts` vira a etapa de ingestão e a busca passa a híbrida.
+
+**Nota com `status: rascunho` não é indexada.** É a regra anti-alucinação na
+camada do dado: a IA nunca pode citar um gabarito `[EXTRAIR]` como se fosse
+método. Veja o estado real do índice em [/analytics](http://localhost:3100/analytics)
+— notas indexadas, trechos, rascunhos de fora, e um campo para testar a busca.
+
 ## A IA
 
-A persona, os 4 modos (sparring, análise, consultor, pré-call) e as regras
-anti-alucinação vivem em [`src/lib/ai/persona.ts`](src/lib/ai/persona.ts). O prompt
-tem dois estados: **com cérebro** (cita fontes do vault) e **sem cérebro** (proibida
-de citar qualquer call — é o estado atual, até a F2 ligar o RAG).
+A persona vem do **Documento 4** (Prompt do Agente): 4 modos — consulta de
+técnica, roleplay, feedback de call e objeção relâmpago — mais as regras R1-R10.
+Vive em [`src/lib/ai/persona.ts`](src/lib/ai/persona.ts).
 
-O cérebro fica em `../arsenal secreto/🧠 Arsenal-Brain/`, com a estrutura, os
-templates e as convenções descritas no README de lá. As notas geradas vieram como
-`status: rascunho` e **não são indexadas** — trocar para `status: pronto` ao
-preencher com material real.
+Os **Documentos 1, 2 e 3** (Persona & Voz, Metodologia, Playbook de Objeções) NÃO
+ficam no prompt: eles são o cérebro, moram no vault em `00-Cerebro/` e chegam por
+RAG. É isso que permite atualizar o método sem tocar no código.
+
+O prompt tem dois estados. **Com fontes recuperadas**, ele cita a nota de origem.
+**Sem fontes**, ele proíbe citar qualquer call, número ou frase do David e obriga
+a marcar a resposta como princípio geral — é a R1/R7 aplicada por construção.
+
+⚠️ **Os Documentos 1-3 estão vazios.** São gabaritos com campos `[EXTRAIR]`
+aguardando a transcrição do David. Enquanto isso, a IA opera com princípios gerais
+e diz que o tema não está no método documentado. Preencher e trocar para
+`status: pronto` é o que destrava o valor real.
 
 ## Esteira de compra (Hotmart)
 
@@ -177,8 +202,11 @@ página de vendas → checkout Hotmart → pagamento
 titularidade é o clique no link recebido naquele endereço, verificado pelo Supabase
 Auth. `claim_entitlements` recusa usuário com e-mail não confirmado.
 
-Não existe bypass de acesso: sem Supabase, `/curso` responde "não configurado" —
-nunca "liberado". Reembolso e chargeback revogam na hora, e um retry atrasado de
+O único atalho é `ARSENAL_MASTER_KEY`: com ela definida, `/acesso-master?key=...`
+grava um cookie httpOnly de 12h e `/curso` abre com selo **master · demo**, para
+nunca ser confundido com compra real. Sem a variável, a rota responde 404.
+**Nunca definir em produção.** Fora isso, sem Supabase `/curso` responde "não
+configurado" — nunca "liberado". Reembolso e chargeback revogam na hora, e um retry atrasado de
 aprovação não ressuscita acesso já reembolsado.
 
 ### Configurar na Hotmart

@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Target, TrendingDown, TrendingUp } from "lucide-react";
+import { BrainStatus } from "@/components/analytics/BrainStatus";
 import { InsightPanel } from "@/components/analytics/InsightPanel";
 import { ScoreChart } from "@/components/analytics/ScoreChart";
 import { loadHistory, serverHistory, subscribeHistory } from "@/lib/training/store";
@@ -135,6 +136,10 @@ export default function AnalyticsPage() {
           na próxima call.
         </p>
       </header>
+
+      <div className="animate-rise mb-6">
+        <BrainStatus />
+      </div>
 
       {records.length === 0 ? (
         <EmptyState />

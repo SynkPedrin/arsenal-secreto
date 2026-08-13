@@ -4,6 +4,7 @@ import { GENERATION, MODELS, REASONING } from "@/lib/ai/config";
 import { humanizeError } from "@/lib/ai/errors";
 import { llm } from "@/lib/ai/llm";
 import { buildSystemPrompt } from "@/lib/ai/persona";
+import { retrieve } from "@/lib/rag/search";
 import { encodeEvent } from "@/lib/chat/protocol";
 
 export const runtime = "nodejs";
@@ -69,11 +70,26 @@ export async function POST(request: Request) {
       const send = (chunk: string) => controller.enqueue(encoder.encode(chunk));
 
       try {
-        // O RAG entra aqui na F2. Até lá o cérebro chega vazio e o system
-        // prompt assume o modo "sem acervo", que proíbe citar calls.
+        // Recuperação no vault antes de gerar. Vault vazio devolve [], e o
+        // system prompt entra no modo que proíbe citar qualquer call.
+        send(encodeEvent({ type: "state", state: "retrieving" }));
+
+        const lastUser = [...history].reverse().find((m) => m.role === "user");
+        const query = [training?.objective, lastUser?.content].filter(Boolean).join(" ");
+
+        const sources = await retrieve(query, {
+          // No roleplay, quem manda são as notas de perfil e de objeção.
+          boostTipos: training ? ["perfil", "objecao"] : undefined,
+          boostTags: training ? [training.clientProfile] : undefined,
+        });
+
+        if (sources.length > 0) {
+          send(encodeEvent({ type: "sources", sources }));
+        }
+
         send(encodeEvent({ type: "state", state: "thinking" }));
 
-        const system = buildSystemPrompt({ sources: [], profile, training });
+        const system = buildSystemPrompt({ sources, profile, training });
 
         const completion = await llm().chat.completions.create({
           model: MODELS.main,
