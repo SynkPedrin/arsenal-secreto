@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { TrainingBlock, UserProfile } from "@/lib/ai/persona";
 import { readEventStream, type AssistantState, type ChatMessage } from "@/lib/chat/protocol";
 
@@ -22,7 +22,25 @@ export function useChat({ profile, training, onReply }: ChatOptions = {}) {
   const abortRef = useRef<AbortController | null>(null);
   const lastPulseRef = useRef(0);
   const optionsRef = useRef({ profile, training, onReply });
-  optionsRef.current = { profile, training, onReply };
+
+  /**
+   * Espelho síncrono das mensagens.
+   *
+   * O updater de setMessages não roda no mesmo tick do handler — ele é
+   * agendado para a fase de render. Montar o histórico lá dentro e ler a
+   * variável logo abaixo devolvia uma lista vazia, e o servidor rejeitava o
+   * corpo. Toda mutação passa por `apply`, que atualiza ref e estado juntos.
+   */
+  const messagesRef = useRef<ChatMessage[]>([]);
+
+  const apply = useCallback((updater: (prev: ChatMessage[]) => ChatMessage[]) => {
+    messagesRef.current = updater(messagesRef.current);
+    setMessages(messagesRef.current);
+  }, []);
+
+  useEffect(() => {
+    optionsRef.current = { profile, training, onReply };
+  }, [profile, training, onReply]);
 
   const busy = state === "retrieving" || state === "thinking" || state === "answering";
 
@@ -35,9 +53,9 @@ export function useChat({ profile, training, onReply }: ChatOptions = {}) {
   const reset = useCallback(() => {
     abortRef.current?.abort();
     abortRef.current = null;
-    setMessages([]);
+    apply(() => []);
     setState("idle");
-  }, []);
+  }, [apply]);
 
   /**
    * Envia uma mensagem. `hidden` mantém o texto fora da tela mas dentro do
@@ -58,11 +76,9 @@ export function useChat({ profile, training, onReply }: ChatOptions = {}) {
       };
       const replyId = crypto.randomUUID();
 
-      let payload: ChatMessage[] = [];
-      setMessages((prev) => {
-        payload = [...prev, userMessage];
-        return [...payload, { id: replyId, role: "assistant", content: "" }];
-      });
+      // Histórico lido do espelho síncrono, antes de qualquer render.
+      const payload = [...messagesRef.current, userMessage];
+      apply(() => [...payload, { id: replyId, role: "assistant", content: "" }]);
 
       const controller = new AbortController();
       abortRef.current = controller;
@@ -101,7 +117,7 @@ export function useChat({ profile, training, onReply }: ChatOptions = {}) {
             case "delta": {
               full += event.text;
               const snapshot = full;
-              setMessages((prev) =>
+              apply((prev) =>
                 prev.map((m) => (m.id === replyId ? { ...m, content: snapshot } : m)),
               );
 
@@ -114,13 +130,13 @@ export function useChat({ profile, training, onReply }: ChatOptions = {}) {
             }
 
             case "sources":
-              setMessages((prev) =>
+              apply((prev) =>
                 prev.map((m) => (m.id === replyId ? { ...m, sources: event.sources } : m)),
               );
               break;
 
             case "error":
-              setMessages((prev) =>
+              apply((prev) =>
                 prev.map((m) =>
                   m.id === replyId ? { ...m, content: event.message, error: true } : m,
                 ),
@@ -137,12 +153,12 @@ export function useChat({ profile, training, onReply }: ChatOptions = {}) {
         return full;
       } catch (error) {
         if (controller.signal.aborted) {
-          setMessages((prev) => prev.filter((m) => m.id !== replyId || m.content.length > 0));
+          apply((prev) => prev.filter((m) => m.id !== replyId || m.content.length > 0));
           setState("idle");
           return full;
         }
 
-        setMessages((prev) =>
+        apply((prev) =>
           prev.map((m) =>
             m.id === replyId
               ? {
@@ -161,7 +177,7 @@ export function useChat({ profile, training, onReply }: ChatOptions = {}) {
         abortRef.current = null;
       }
     },
-    [],
+    [apply],
   );
 
   return { messages, state, busy, pulse, send, stop, reset };

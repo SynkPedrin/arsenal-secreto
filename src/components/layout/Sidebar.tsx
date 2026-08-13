@@ -30,20 +30,16 @@ export function Sidebar({ initials }: { initials: string }) {
       <Link
         href="/"
         aria-label="Arsenal — início"
-        className="group/logo relative mb-6 hidden shrink-0 md:block"
+        className="group/logo mb-6 hidden shrink-0 md:block"
       >
-        {/* Halo atrás do monograma: dá presença sem tocar na marca. */}
-        <span
-          aria-hidden
-          className="absolute inset-0 -z-10 rounded-full bg-[radial-gradient(circle,oklch(78%_0.13_80_/_0.22),transparent_70%)] blur-md transition-opacity duration-500 group-hover/logo:opacity-100 md:opacity-70"
-        />
+        {/* Só o monograma: sem anel na arte, sem halo atrás. */}
         <Image
           src="/logo-dw.png"
           alt="David William"
-          width={60}
-          height={60}
+          width={72}
+          height={72}
           priority
-          className="size-[60px] transition-transform duration-500 ease-out group-hover/logo:scale-[1.04]"
+          className="size-[72px] transition-transform duration-500 ease-out group-hover/logo:scale-[1.05]"
         />
       </Link>
 
