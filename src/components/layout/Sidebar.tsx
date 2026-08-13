@@ -24,7 +24,7 @@ export function Sidebar({ initials }: { initials: string }) {
       {/* Filete vertical que some nas pontas — remata a barra sem pesar. */}
       <span
         aria-hidden
-        className="absolute top-0 right-0 hidden h-full w-px bg-gradient-to-b from-transparent via-[oklch(78%_0.13_80_/_0.16)] to-transparent md:block"
+        className="absolute top-0 right-0 hidden h-full w-px bg-gradient-to-b from-transparent via-[oklch(81%_0.018_82_/_0.16)] to-transparent md:block"
       />
 
       <Link
