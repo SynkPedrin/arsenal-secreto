@@ -12,7 +12,20 @@ import matter from "gray-matter";
  * entrar, este módulo vira a etapa de ingestão e a busca passa a ser híbrida.
  */
 
-const IGNORED_DIRS = new Set([".obsidian", ".trash", "_Templates", "node_modules", ".git"]);
+/**
+ * `08-Fonte-Bruta` guarda as transcrições cruas e os gabaritos originais. Fica
+ * fora do índice de propósito: a IA deve citar o conhecimento já destilado, não
+ * duas horas de call literal nem um formulário com campos [EXTRAIR] — que ela
+ * apresentaria como se fosse método.
+ */
+const IGNORED_DIRS = new Set([
+  ".obsidian",
+  ".trash",
+  "_Templates",
+  "08-Fonte-Bruta",
+  "node_modules",
+  ".git",
+]);
 /** Chunks fora desta faixa são ruído: cabeçalho solto ou parede de texto. */
 const MIN_CHUNK_CHARS = 80;
 const MAX_CHUNK_CHARS = 1400;

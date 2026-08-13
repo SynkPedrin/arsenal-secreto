@@ -175,10 +175,13 @@ O prompt tem dois estados. **Com fontes recuperadas**, ele cita a nota de origem
 **Sem fontes**, ele proíbe citar qualquer call, número ou frase do David e obriga
 a marcar a resposta como princípio geral — é a R1/R7 aplicada por construção.
 
-⚠️ **Os Documentos 1-3 estão vazios.** São gabaritos com campos `[EXTRAIR]`
-aguardando a transcrição do David. Enquanto isso, a IA opera com princípios gerais
-e diz que o tema não está no método documentado. Preencher e trocar para
-`status: pronto` é o que destrava o valor real.
+O cérebro está **preenchido**: `00-Cerebro/` tem os três documentos destilados de
+**8 calls reais** do David (74 a 152 min cada) — persona e bordões, as 3 etapas do
+método com as 7 fontes de aquisição, e 8 objeções com script verbatim.
+
+`08-Fonte-Bruta/` guarda as transcrições originais e fica **fora do índice**: a IA
+cita conhecimento destilado, não duas horas de call literal nem gabarito com campos
+`[EXTRAIR]`. Use a pasta para auditar a origem de qualquer frase.
 
 ## Esteira de compra (Hotmart)
 
